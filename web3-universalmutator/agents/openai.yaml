@@ -1,0 +1,7 @@
+interface:
+  display_name: "Web3 UniversalMutator"
+  short_description: "Autonomous Web3 mutation campaigns for TON and EVM"
+  default_prompt: "Use $web3-universalmutator to detect a TON or EVM project, plan safe Universal Mutator commands, run smoke/full campaigns, propose custom rules, and write mutation reports."
+
+policy:
+  allow_implicit_invocation: true
