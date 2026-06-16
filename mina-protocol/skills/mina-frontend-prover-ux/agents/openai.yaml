@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Frontend Prover UX"
+  short_description: "Design safe Mina frontend prover flows"
+  default_prompt: "Use $mina-frontend-prover-ux to review this Mina frontend prover flow for privacy, UX, and reliability."

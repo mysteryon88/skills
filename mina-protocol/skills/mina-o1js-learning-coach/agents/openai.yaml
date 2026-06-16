@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js Learning Coach"
+  short_description: "Learn Mina and o1js step by step"
+  default_prompt: "Use $mina-o1js-learning-coach to teach me this Mina/o1js concept with one example and one exercise."

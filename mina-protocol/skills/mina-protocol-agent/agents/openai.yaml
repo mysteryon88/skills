@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Protocol Agent"
+  short_description: "Route Mina skills and shared references"
+  default_prompt: "Use $mina-protocol-agent to choose the right Mina/o1js skills and shared references for this task."

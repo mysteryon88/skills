@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Merkle State"
+  short_description: "Design Merkle and off-chain state proofs"
+  default_prompt: "Use $mina-merkle-offchain-state-dev to design this Mina Merkle/off-chain state update flow."

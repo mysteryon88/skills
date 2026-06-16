@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Deployment Security"
+  short_description: "Review Mina deployment and upgrade safety"
+  default_prompt: "Use $mina-deployment-upgrade-security to review this Mina deployment plan and permission matrix."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina ZkProgram Recursion"
+  short_description: "Build ZkPrograms and recursive proofs"
+  default_prompt: "Use $mina-zkprogram-recursion-dev to design this o1js ZkProgram and recursive proof flow."

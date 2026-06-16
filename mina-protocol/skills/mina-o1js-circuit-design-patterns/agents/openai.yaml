@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js Circuit Patterns"
+  short_description: "Design safe o1js circuit constraints"
+  default_prompt: "Use $mina-o1js-circuit-design-patterns to review these o1js constraints and witness patterns."

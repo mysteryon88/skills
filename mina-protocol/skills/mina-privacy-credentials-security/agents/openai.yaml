@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Privacy Credentials"
+  short_description: "Review Mina credentials and privacy flows"
+  default_prompt: "Use $mina-privacy-credentials-security to review this Mina credential flow for nullifiers and leakage."

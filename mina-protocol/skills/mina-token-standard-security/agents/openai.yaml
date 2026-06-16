@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Token Security"
+  short_description: "Review Mina custom token safety"
+  default_prompt: "Use $mina-token-standard-security to review this Mina token contract for mint, burn, tokenId, and supply risks."

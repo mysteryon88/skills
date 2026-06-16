@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina AccountUpdate Debugger"
+  short_description: "Debug Mina transaction and AccountUpdate failures"
+  default_prompt: "Use $mina-accountupdate-transaction-debugger to debug this Mina transaction failure and map the AccountUpdates."

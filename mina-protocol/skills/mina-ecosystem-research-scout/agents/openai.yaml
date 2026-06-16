@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina Research Scout"
+  short_description: "Find current Mina and o1js resources"
+  default_prompt: "Use $mina-ecosystem-research-scout to find current Mina/o1js resources for this topic."

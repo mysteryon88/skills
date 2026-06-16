@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js Testing"
+  short_description: "Write Mina negative and invariant tests"
+  default_prompt: "Use $mina-o1js-testing-fuzzing to add negative and invariant tests for this Mina/o1js feature."

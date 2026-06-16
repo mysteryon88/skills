@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js Debugging"
+  short_description: "Debug o1js compile, prove, and send issues"
+  default_prompt: "Use $mina-o1js-debugging-performance to diagnose this o1js compile/prove/transaction issue."

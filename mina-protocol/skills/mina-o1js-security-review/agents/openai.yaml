@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js Security Review"
+  short_description: "Audit Mina zkApps and o1js circuits"
+  default_prompt: "Use $mina-o1js-security-review to audit this Mina/o1js repo and produce findings with test gaps."

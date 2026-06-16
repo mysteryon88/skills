@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mina o1js zkApp Dev"
+  short_description: "Build and debug Mina o1js zkApps"
+  default_prompt: "Use $mina-o1js-zkapp-dev to design and implement this Mina zkApp method safely."
