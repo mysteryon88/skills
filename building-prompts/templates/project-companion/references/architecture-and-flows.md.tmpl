@@ -1,0 +1,18 @@
+# Architecture and Recurring Flows
+
+## Current state
+
+Bootstrap deliberately does not infer architecture from directory names. No durable ownership boundary or recurring cross-layer flow has been verified yet.
+
+## How to add a durable fact
+
+Use this shape after inspecting code, then add the actual record as ordinary Markdown lines outside this fenced example:
+
+```text
+Fact: <stable ownership rule or recurring flow>
+Evidence: `<path>`, `<symbol/route/schema/test>`
+Confidence: confirmed
+Last verified: <commit or date>
+```
+
+Keep task-specific call traces in the task analysis, not in this project companion.

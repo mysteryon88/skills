@@ -1,0 +1,53 @@
+---
+name: $skill_name
+description: $description
+---
+
+# $project_name Project Context
+
+## Role in the pair
+
+This is the repository-local project companion for `building-prompts`. It stores durable project facts. The parent skill owns prompt construction, task decomposition, and fresh task-specific inspection.
+
+Do not use this companion as a substitute for reading current code and repository instructions.
+
+## Project identity
+
+- Project: $project_name
+- Repository root from this skill: `$root_relative_to_companion`
+- Current state, timestamps, fingerprints, and git verification: `manifest.json`
+
+## Freshness contract
+
+Before relying on durable facts, validate with the parent skill's `scripts/validate_project_companion.py`. It recomputes high-signal inventory and separately reports structure, inventory, generated-content, and durable-fact status. Added, removed, changed, unreadable, truncated, missing-evidence, malformed, or contradictory inputs prevent a false current result.
+
+Current code, tests, repository instructions, and explicit user decisions always override this companion.
+
+## Required startup
+
+1. Read all applicable repository instructions in the task scope.
+2. Read only the reference files relevant to the task.
+3. Confirm the affected code path with exact files and symbols.
+4. Report and correct durable contradictions instead of silently working around them.
+
+## Bootstrap inventory
+
+- Detected stack signals: $stack_summary
+- Repository instruction sources: $instruction_summary
+- High-signal project files: $high_signal_summary
+- Top-level entries: $top_level_summary
+
+This inventory is detection evidence, not an architecture claim.
+
+## Reference files
+
+- `references/project-map.md`: repository boundary, manifests, instructions, and static inventory.
+- `references/commands-and-checks.md`: commands explicitly discovered from project files.
+- `references/architecture-and-flows.md`: manually verified ownership boundaries and recurring flows.
+- `references/constraints-and-risks.md`: durable constraints, generated areas, compatibility surfaces, and sensitive boundaries.
+
+## Durable update rules
+
+Keep only facts useful across future tasks. For each manually added fact, include `Fact`, repository-relative `Evidence`, `Confidence: confirmed`, and `Last verified` as ordinary Markdown lines outside fenced examples. Run `scripts/hydrate_project_companion.py` from the parent skill only after every durable fact passes semantic validation. Remove obsolete facts when ownership or commands change.
+
+Never store one-off task plans, current bug details, speculative architecture, secrets, tokens, environment values, personal data, or copied generic prompt instructions here.

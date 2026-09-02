@@ -1,0 +1,4 @@
+interface:
+  display_name: "Building Prompts"
+  short_description: "Create or quickly review copy-ready prompts"
+  default_prompt: "Use $building-prompts to create or review the smallest adequate copy-ready prompt for this request."
