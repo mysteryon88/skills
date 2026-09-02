@@ -1,0 +1,4 @@
+interface:
+  display_name: "Groth16 Systems"
+  short_description: "Design and review Groth16 circuits and integrations"
+  default_prompt: "Use $groth16-systems to design, explain, debug, test, or review this Groth16 system."
