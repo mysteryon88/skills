@@ -1,0 +1,18 @@
+[registry]
+expected_names = ["lite", "hard"]
+
+[[profiles]]
+name = "lite"
+description = "Root-authored detailed plan, Luna Max implementation, and Luna test execution."
+roles = ["luna_worker", "luna_test_runner"]
+default_max_threads = 2
+
+[[profiles]]
+name = "hard"
+description = "Full evidence, architecture, implementation, testing, skepticism, security, and review workflow."
+roles = [
+  "repo_explorer", "docs_researcher", "runtime_investigator", "sol_architect",
+  "skeptic", "luna_worker", "terra_worker", "luna_test_runner",
+  "sol_reviewer", "security_reviewer", "docs_writer",
+]
+default_max_threads = 4

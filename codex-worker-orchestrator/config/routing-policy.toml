@@ -1,0 +1,38 @@
+[workflow]
+root_owner = "root"
+root_is_spawnable = false
+
+[budgets]
+max_agents = 4
+max_writers = 1
+max_read_only = 4
+max_reviewers = 2
+
+[parallelism]
+second_writer_requires_independent_packages = true
+second_writer_requires_disjoint_write_surfaces = true
+second_writer_requires_separate_worktrees = true
+second_writer_requires_validated_overlay = true
+ask_user_before_creating_worktrees = true
+
+[lite_workflow]
+root_authors_detailed_plan = true
+requires_ordered_steps = true
+requires_allowed_files = true
+requires_acceptance_criteria = true
+requires_verification_commands = true
+requires_stop_conditions = true
+test_runner_required_after_write = true
+root_reviews_actual_diff = true
+
+[test_routing]
+spawn_threshold_seconds = 120
+max_parallel_runners = 2
+
+[hooks]
+mode = "advisory"
+enabled = false
+
+[capabilities]
+auto_install = false
+discovered_skills_only = true

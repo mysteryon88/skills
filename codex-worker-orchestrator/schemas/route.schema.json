@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/schemas/route.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["workflow_owner", "mode", "parallel_strategy", "classification", "selected_roles", "rejected_roles", "capability_packs", "task_instances", "parallel_waves", "write_ownership", "approval_gates", "quality_gates", "fallbacks", "warnings"],
+  "properties": {
+    "workflow_owner": {"type": "string", "minLength": 1},
+    "mode": {"type": "string", "enum": ["inline", "sequential", "parallel", "blocked", "handoff"]},
+    "parallel_strategy": {"type": "string", "enum": ["none", "native", "companion"]},
+    "classification": {"type": "string", "minLength": 1},
+    "selected_roles": {"type": "array", "items": {"$ref": "#/$defs/roleDecision"}, "maxItems": 4},
+    "rejected_roles": {"type": "array", "items": {"$ref": "#/$defs/roleDecision"}},
+    "capability_packs": {"type": "array", "items": {"$ref": "#/$defs/capabilityDecision"}},
+    "task_instances": {"type": "array", "items": {"$ref": "#/$defs/taskInstance"}},
+    "parallel_waves": {"type": "array", "items": {"$ref": "#/$defs/wave"}},
+    "write_ownership": {"type": "array", "items": {"$ref": "#/$defs/ownership"}},
+    "approval_gates": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "quality_gates": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "fallbacks": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "warnings": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "roleDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "reason"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "capabilityDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "discovered_skills"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "enum": ["satisfied", "missing", "not-required"]},
+        "discovered_skills": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "taskInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "role", "package"],
+      "properties": {
+        "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+        "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "package": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "wave": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "roles", "task_ids"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 1},
+        "roles": {"type": "array", "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}, "minItems": 1},
+        "task_ids": {"type": "array", "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"}, "minItems": 1}
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "surfaces"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "surfaces": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}
+      }
+    }
+  }
+}

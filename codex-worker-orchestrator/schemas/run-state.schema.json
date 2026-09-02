@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/schemas/run-state.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "status", "created_at", "updated_at", "history", "acceptance", "route", "reports", "reconciliation", "verification"],
+  "properties": {
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "status": {"type": "string", "enum": ["created", "routing", "awaiting-approval", "investigating", "planning", "implementing", "reviewing", "repairing", "verifying", "completed", "partial", "blocked", "failed"]},
+    "created_at": {"type": "string", "minLength": 1},
+    "updated_at": {"type": "string", "minLength": 1},
+    "history": {"type": "array", "items": {"$ref": "#/$defs/transition"}, "minItems": 1},
+    "acceptance": {"$ref": "#/$defs/acceptance"},
+    "route": {"type": ["object", "null"]},
+    "reports": {"type": "array", "items": {"type": "object"}},
+    "reconciliation": {"$ref": "#/$defs/reconciliation"},
+    "verification": {"$ref": "#/$defs/verification"}
+  },
+  "$defs": {
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "at", "reason"],
+      "properties": {
+        "from": {"type": ["string", "null"]},
+        "to": {"type": "string", "minLength": 1},
+        "at": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criteria", "satisfied"],
+      "properties": {
+        "criteria": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "satisfied": {"type": "boolean"}
+      }
+    },
+    "reconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decisions"],
+      "properties": {
+        "decisions": {"type": "array", "items": {"$ref": "#/$defs/reconciliationDecision"}}
+      }
+    },
+    "reconciliationDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "task_id", "decision", "reason", "at"],
+      "properties": {
+        "report_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+        "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+        "decision": {"type": "string", "enum": ["ACCEPT", "REPAIR", "INVESTIGATE", "REPLAN", "BLOCK"]},
+        "reason": {"type": "string", "minLength": 1},
+        "at": {"type": "string", "minLength": 1}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrated_at", "blocking_findings"],
+      "properties": {
+        "integrated_at": {"type": ["string", "null"]},
+        "blocking_findings": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

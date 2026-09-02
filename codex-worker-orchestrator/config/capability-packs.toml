@@ -1,0 +1,56 @@
+[registry]
+expected_names = [
+  "frontend-browser", "api-docs", "security", "database-migration",
+  "performance-concurrency", "devops-ci", "static-analysis", "fuzzing",
+  "smart-contracts", "documentation",
+]
+
+[[packs]]
+name = "frontend-browser"
+description = "Browser automation, visual inspection, or frontend implementation."
+skill_alternatives = ["browser:control-in-app-browser", "playwright", "playwright-interactive"]
+
+[[packs]]
+name = "api-docs"
+description = "Primary API documentation and product guidance."
+skill_alternatives = ["openai-docs"]
+
+[[packs]]
+name = "security"
+description = "Security review and evidence-backed vulnerability analysis."
+skill_alternatives = ["codex-security:security-scan", "security-best-practices", "semgrep"]
+
+[[packs]]
+name = "database-migration"
+description = "Database schema migration and PostgreSQL guidance."
+skill_alternatives = ["build-web-apps:supabase-postgres-best-practices"]
+
+[[packs]]
+name = "performance-concurrency"
+description = "Performance-sensitive and concurrent implementation guidance."
+skill_alternatives = ["go-concurrency-practice", "go-optimizations"]
+
+[[packs]]
+name = "devops-ci"
+description = "Deployment, CI, and operational configuration guidance."
+skill_alternatives = ["codex-engineering-guardrails:code-work"]
+
+[[packs]]
+name = "static-analysis"
+description = "Static code and security analysis."
+skill_alternatives = ["semgrep", "sonarqube:sonar-analyze"]
+
+[[packs]]
+name = "fuzzing"
+description = "Fuzzing and mutation-oriented test design."
+skill_alternatives = ["web3-universalmutator"]
+
+[[packs]]
+name = "smart-contracts"
+description = "Smart-contract and Solidity analysis."
+skill_alternatives = ["solidity-semgrep-detectors", "ton-zk-skills"]
+
+[[packs]]
+name = "documentation"
+description = "Documentation authoring and review."
+skill_alternatives = ["documents:documents", "building-prompts"]

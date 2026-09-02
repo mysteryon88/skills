@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/schemas/route-request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase", "intent", "complexity", "uncertainty", "risk", "mutation",
+    "approved_design", "approved_numbered_plan", "delegated_execution_selected",
+    "confirmed_root_cause", "requires_external_docs",
+    "requires_runtime_reproduction", "security_sensitive", "visual_or_browser",
+    "required_capabilities", "independent_packages", "write_surfaces",
+    "user_forbids_subagents"
+  ],
+  "properties": {
+    "phase": {"type": "string", "enum": ["requirements", "investigation", "design", "planning", "implementation", "review", "verification", "documentation"]},
+    "intent": {"type": "string", "enum": ["inline", "explore-code", "research-docs", "reproduce-runtime", "architecture", "skeptic-review", "plan-gap-analysis", "plan-review", "quick-implementation", "bounded-implementation", "deep-fixed-implementation", "integration-debugging", "test-execution", "test-authoring", "task-review", "final-review", "security-review", "documentation"]},
+    "complexity": {"type": "string", "enum": ["trivial", "low", "moderate", "high", "extreme"]},
+    "uncertainty": {"type": "string", "enum": ["low", "medium", "high"]},
+    "risk": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "mutation": {"type": "string", "enum": ["none", "read", "write", "diagnostic"]},
+    "approved_design": {"type": "boolean"},
+    "approved_numbered_plan": {"type": "boolean"},
+    "delegated_execution_selected": {"type": "boolean"},
+    "confirmed_root_cause": {"type": "boolean"},
+    "requires_external_docs": {"type": "boolean"},
+    "requires_runtime_reproduction": {"type": "boolean"},
+    "security_sensitive": {"type": "boolean"},
+    "visual_or_browser": {"type": "boolean"},
+    "required_capabilities": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 10},
+    "independent_packages": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 4},
+    "write_surfaces": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "user_forbids_subagents": {"type": "boolean"},
+    "test_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimated_seconds", "blocks_next_step", "parallel_value", "noisy_output", "shared_resources"],
+      "properties": {
+        "estimated_seconds": {"type": "integer", "minimum": 0, "maximum": 86400},
+        "blocks_next_step": {"type": "boolean"},
+        "parallel_value": {"type": "boolean"},
+        "noisy_output": {"type": "boolean"},
+        "shared_resources": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 20}
+      }
+    }
+  }
+}

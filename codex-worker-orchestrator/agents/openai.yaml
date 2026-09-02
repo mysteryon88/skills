@@ -1,0 +1,7 @@
+interface:
+  display_name: "Codex Worker Orchestrator"
+  short_description: "Routes work through bounded Codex roles"
+  default_prompt: "Use $codex-worker-orchestrator to select the smallest sufficient roles, announce every spawn, and coordinate parallel work without duplicating an installed plan compiler."
+policy:
+  products: [CODEX]
+  allow_implicit_invocation: false
