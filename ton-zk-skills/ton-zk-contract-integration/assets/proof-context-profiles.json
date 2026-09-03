@@ -1,0 +1,103 @@
+{
+  "registryVersion": 1,
+  "curve": "bls12-381",
+  "domainProfiles": {
+    "sha256-length-delimited-msb248-v1": {
+      "publicInputEncoding": "domain-hash-msb248-v1",
+      "requiredFields": [
+        "network.globalId",
+        "network.workchain",
+        "contract.address",
+        "contract.domainId",
+        "circuit.id",
+        "verifyingKey.hash",
+        "protocol",
+        "action.name",
+        "action.version",
+        "action.opcode"
+      ],
+      "preimagePrefixHex": "544f4e2d5a4b2d444f4d41494e00",
+      "recordEncoding": "u16be(field-name-utf8-length) || field-name-utf8 || u32be(value-length) || value",
+      "valueEncodings": {
+        "network.globalId": "signed-int32-be",
+        "network.workchain": "signed-int32-be",
+        "contract.address": "signed-int32-be-workchain || 32-byte-account-id",
+        "contract.domainId": "utf8",
+        "circuit.id": "utf8",
+        "verifyingKey.hash": "32-byte-hex-decoded-sha256",
+        "protocol": "lowercase-ascii",
+        "action.name": "utf8",
+        "action.version": "uint32-be",
+        "action.opcode": "uint32-be"
+      },
+      "digest": "sha256",
+      "digestSelection": "first-31-bytes",
+      "fieldInterpretation": "unsigned-big-endian"
+    }
+  },
+  "inputEncodings": {
+    "domain-hash-msb248-v1": {
+      "types": ["field"],
+      "bits": 248
+    },
+    "ton-address-cell-hash-high128-be-v1": {
+      "types": ["address-hash"],
+      "bits": 128,
+      "pairFamily": "ton-address-cell-hash-be-v1",
+      "pairLimb": "high128",
+      "logicalValue": "addr_std without anycast",
+      "cellBits": "addr_std$10 || anycast-none$0 || workchain_id:int8 || address:bits256",
+      "cellRefs": 0,
+      "hashTarget": "ordinary-level-0-cell-representation-hash",
+      "digestSplit": "first-16-bytes-big-endian"
+    },
+    "ton-address-cell-hash-low128-be-v1": {
+      "types": ["address-hash"],
+      "bits": 128,
+      "pairFamily": "ton-address-cell-hash-be-v1",
+      "pairLimb": "low128",
+      "logicalValue": "addr_std without anycast",
+      "cellBits": "addr_std$10 || anycast-none$0 || workchain_id:int8 || address:bits256",
+      "cellRefs": 0,
+      "hashTarget": "ordinary-level-0-cell-representation-hash",
+      "digestSplit": "last-16-bytes-big-endian"
+    },
+    "ton-cell-hash-high128-be-v1": {
+      "types": ["cell-hash"],
+      "bits": 128,
+      "pairFamily": "ton-cell-hash-be-v1",
+      "pairLimb": "high128",
+      "logicalValue": "application-selected root of an ordinary level-0 cell graph",
+      "hashTarget": "root-cell-representation-hash-including-reference-depths-and-hashes",
+      "transportRule": "BoC index, CRC and ordering flags are not part of the hash target",
+      "digestSplit": "first-16-bytes-big-endian"
+    },
+    "ton-cell-hash-low128-be-v1": {
+      "types": ["cell-hash"],
+      "bits": 128,
+      "pairFamily": "ton-cell-hash-be-v1",
+      "pairLimb": "low128",
+      "logicalValue": "application-selected root of an ordinary level-0 cell graph",
+      "hashTarget": "root-cell-representation-hash-including-reference-depths-and-hashes",
+      "transportRule": "BoC index, CRC and ordering flags are not part of the hash target",
+      "digestSplit": "last-16-bytes-big-endian"
+    },
+    "field-canonical-v1": {
+      "types": ["field", "merkle-root", "nullifier"],
+      "bits": null,
+      "acceptedDomain": "0 <= value < BLS12-381 scalar modulus",
+      "aliases": "reject negative values, modulus reduction and values >= scalar modulus"
+    },
+    "uint-be-v1": {
+      "types": ["uint", "nonce", "timestamp"],
+      "bits": null,
+      "acceptedDomain": "manifest inclusive range and declared bit width",
+      "byteOrder": "big-endian"
+    },
+    "boolean-01-v1": {
+      "types": ["boolean"],
+      "bits": 1,
+      "acceptedDomain": "integer 0 or 1 only"
+    }
+  }
+}

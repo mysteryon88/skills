@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ton-zk:review-verdict:2",
+  "title": "TON ZK Review Verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "reviewTarget",
+    "tonIntegrationVerdict",
+    "fullZkReleaseVerdict",
+    "phases",
+    "ownerAcceptedRisks"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 2},
+    "reviewTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "revision", "artifactSet", "artifactSetSha256"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "artifactSet": {"type": "string", "minLength": 1},
+        "artifactSetSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "tonIntegrationVerdict": {
+      "enum": [
+        "TON_INTEGRATION_READY",
+        "TON_INTEGRATION_PARTIALLY_READY",
+        "TON_INTEGRATION_NOT_READY"
+      ]
+    },
+    "fullZkReleaseVerdict": {
+      "enum": ["FULL_ZK_RELEASE_READY", "FULL_ZK_RELEASE_NOT_READY"]
+    },
+    "phases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "circuitAudit",
+        "proofSystemAudit",
+        "proverConverterAudit",
+        "setupSrsReview",
+        "tonIntegrationAudit",
+        "deploymentEvidence"
+      ],
+      "properties": {
+        "circuitAudit": {"$ref": "#/$defs/phase"},
+        "proofSystemAudit": {"$ref": "#/$defs/phase"},
+        "proverConverterAudit": {"$ref": "#/$defs/phase"},
+        "setupSrsReview": {"$ref": "#/$defs/phase"},
+        "tonIntegrationAudit": {"$ref": "#/$defs/phase"},
+        "deploymentEvidence": {"$ref": "#/$defs/phase"}
+      }
+    },
+    "ownerAcceptedRisks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_IN_SCOPE", "NOT_ASSESSED"]},
+        "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "blocker": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "PASS"}}, "required": ["status"]},
+          "then": {
+            "properties": {"evidence": {"minItems": 1}},
+            "not": {"required": ["blocker"]}
+          },
+          "else": {"required": ["blocker"]}
+        }
+      ]
+    },
+    "allPass": {
+      "properties": {
+        "phases": {
+          "properties": {
+            "circuitAudit": {"properties": {"status": {"const": "PASS"}}},
+            "proofSystemAudit": {"properties": {"status": {"const": "PASS"}}},
+            "proverConverterAudit": {"properties": {"status": {"const": "PASS"}}},
+            "setupSrsReview": {"properties": {"status": {"const": "PASS"}}},
+            "tonIntegrationAudit": {"properties": {"status": {"const": "PASS"}}},
+            "deploymentEvidence": {"properties": {"status": {"const": "PASS"}}}
+          }
+        }
+      }
+    },
+    "tonPass": {
+      "properties": {
+        "phases": {
+          "properties": {
+            "tonIntegrationAudit": {"properties": {"status": {"const": "PASS"}}},
+            "deploymentEvidence": {"properties": {"status": {"const": "PASS"}}}
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"fullZkReleaseVerdict": {"const": "FULL_ZK_RELEASE_READY"}}},
+      "then": {"$ref": "#/$defs/allPass"},
+      "else": {"not": {"$ref": "#/$defs/allPass"}}
+    },
+    {
+      "if": {"properties": {"tonIntegrationVerdict": {"const": "TON_INTEGRATION_READY"}}},
+      "then": {"$ref": "#/$defs/tonPass"}
+    },
+    {
+      "if": {"properties": {"tonIntegrationVerdict": {"const": "TON_INTEGRATION_NOT_READY"}}},
+      "then": {
+        "properties": {
+          "phases": {
+            "anyOf": [
+              {"properties": {"tonIntegrationAudit": {"properties": {"status": {"const": "FAIL"}}}}},
+              {"properties": {"deploymentEvidence": {"properties": {"status": {"const": "FAIL"}}}}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"tonIntegrationVerdict": {"const": "TON_INTEGRATION_PARTIALLY_READY"}}},
+      "then": {
+        "properties": {
+          "phases": {
+            "properties": {
+              "tonIntegrationAudit": {"properties": {"status": {"not": {"const": "FAIL"}}}},
+              "deploymentEvidence": {"properties": {"status": {"not": {"const": "FAIL"}}}}
+            }
+          }
+        },
+        "not": {"$ref": "#/$defs/tonPass"}
+      }
+    }
+  ]
+}

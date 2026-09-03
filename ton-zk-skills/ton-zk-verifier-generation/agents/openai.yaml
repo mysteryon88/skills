@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Verifier Generation"
+  short_description: "Generate reproducible TON ZK verifiers"
+  default_prompt: "Use $ton-zk-verifier-generation to diagnose this artifact and generate the correct tested TON verifier and wrapper without editing the cryptographic core."

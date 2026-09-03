@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Integration Review"
+  short_description: "Audit TON ZK verifier integrations"
+  default_prompt: "Use $ton-zk-integration-review for the TON integration boundary after artifacts exist. Do not treat it as the sole audit of circuit constraints, prover correctness, proof-system soundness, or ceremony execution; derive and validate separate TON and full-ZK verdicts."

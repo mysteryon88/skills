@@ -1,0 +1,513 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ton-zk:proof-context:4",
+  "title": "TON ZK Proof Context Manifest",
+  "description": "Semantic contract between a circuit, generated verifier, client encoding, and TON state transition.",
+  "$defs": {
+    "hashedArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "hashAlgorithm", "hash", "hashScope"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "hashAlgorithm": {"const": "sha256"},
+        "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "hashScope": {"const": "exact-source-bytes"}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "protocol",
+    "curve",
+    "status",
+    "circuitId",
+    "verifyingKey",
+    "setup",
+    "networkDomain",
+    "contract",
+    "action",
+    "publicInputs",
+    "domainSeparation",
+    "replayProtection"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "4"
+    },
+    "protocol": {
+      "enum": [
+        "groth16",
+        "plonk"
+      ]
+    },
+    "curve": {
+      "const": "bls12-381"
+    },
+    "status": {
+      "enum": [
+        "development",
+        "experimental",
+        "production-candidate"
+      ]
+    },
+    "circuitId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "verifyingKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hashAlgorithm",
+        "hash",
+        "hashScope",
+        "source"
+      ],
+      "properties": {
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "hashScope": {
+          "const": "exact-source-bytes",
+          "description": "The hash covers the exact bytes of the source artifact named by source; it is not a hash of reformatted JSON or generated source."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "description": "Distinct phase-1, relation, and final proving-key identities plus independently reviewable verification evidence.",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "curve",
+        "power",
+        "capacity",
+        "artifacts",
+        "verificationCommands",
+        "verificationEvidence",
+        "contributionEvidence",
+        "releaseBinding"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "groth16-phase2",
+            "plonk-universal-srs"
+          ]
+        },
+        "curve": {
+          "const": "bls12-381"
+        },
+        "power": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 63
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["powersOfTau", "r1cs", "finalZkey"],
+          "properties": {
+            "powersOfTau": {"$ref": "#/$defs/hashedArtifact"},
+            "r1cs": {"$ref": "#/$defs/hashedArtifact"},
+            "finalZkey": {"$ref": "#/$defs/hashedArtifact"}
+          }
+        },
+        "verificationCommands": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["powersOfTau", "finalZkey"],
+          "properties": {
+            "powersOfTau": {"type": "string", "minLength": 1},
+            "finalZkey": {"type": "string", "minLength": 1}
+          }
+        },
+        "verificationEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "contributionEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "releaseBinding": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "networkDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "globalIdSource",
+        "expectedGlobalId",
+        "workchain",
+        "runtimeCheck"
+      ],
+      "properties": {
+        "network": {
+          "enum": [
+            "sandbox",
+            "testnet",
+            "mainnet",
+            "custom"
+          ]
+        },
+        "globalIdSource": {
+          "const": "tvm-config-19"
+        },
+        "expectedGlobalId": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "workchain": {
+          "description": "Signed TON workchain identifier. Standard addresses use int8; variable addresses permit int32.",
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "runtimeCheck": {
+          "const": "required"
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domainId",
+        "addressBinding"
+      ],
+      "properties": {
+        "domainId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "addressBinding": {
+          "enum": [
+            "public-input",
+            "authenticated-state",
+            "deployment-constant"
+          ]
+        },
+        "expectedAddress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format",
+            "workchain",
+            "accountId",
+            "anycast"
+          ],
+          "properties": {
+            "format": {
+              "const": "raw-workchain-account-id-v1"
+            },
+            "workchain": {
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "accountId": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "anycast": {
+              "const": "none"
+            }
+          }
+        },
+        "codeHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "opcode"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "publicInputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "name",
+          "type",
+          "source",
+          "semantics",
+          "applicationCheck",
+          "encoding"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_]*$"
+          },
+          "type": {
+            "enum": [
+              "field",
+              "uint",
+              "boolean",
+              "address-hash",
+              "cell-hash",
+              "merkle-root",
+              "nullifier",
+              "nonce",
+              "timestamp"
+            ]
+          },
+          "bits": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "semantics": {
+            "type": "string",
+            "minLength": 1
+          },
+          "applicationCheck": {
+            "type": "string",
+            "minLength": 1
+          },
+          "range": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "minimum",
+              "maximum",
+              "unit"
+            ],
+            "properties": {
+              "minimum": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$"
+              },
+              "maximum": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$"
+              },
+              "unit": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              }
+            }
+          },
+          "encoding": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*-v[0-9]+$"
+          },
+          "encodingGroup": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Shared identifier for the high128 and low128 limbs of one canonical 256-bit hash."
+          }
+        }
+      }
+    },
+    "domainSeparation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputName",
+        "fields",
+        "profile"
+      ],
+      "properties": {
+        "inputName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "network.globalId",
+              "network.workchain",
+              "contract.address",
+              "contract.domainId",
+              "circuit.id",
+              "verifyingKey.hash",
+              "protocol",
+              "action.name",
+              "action.version",
+              "action.opcode"
+            ]
+          }
+        },
+        "profile": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*-v[0-9]+$"
+        }
+      }
+    },
+    "replayProtection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "inputName",
+        "storageKey",
+        "domainFields"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "nullifier",
+            "nonce",
+            "seqno",
+            "one-shot"
+          ]
+        },
+        "inputName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "storageKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domainFields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "expiry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputName",
+        "clock"
+      ],
+      "properties": {
+        "inputName": {
+          "type": "string"
+        },
+        "clock": {
+          "const": "blockchain-now"
+        },
+        "maxFutureSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "stateBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputName",
+        "source"
+      ],
+      "properties": {
+        "inputName": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "historyPolicy": {
+          "enum": [
+            "current-only",
+            "bounded-history",
+            "application-defined"
+          ]
+        }
+      }
+    },
+    "experimentalApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved",
+        "rationale",
+        "evidence"
+      ],
+      "properties": {
+        "approved": {
+          "const": true
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

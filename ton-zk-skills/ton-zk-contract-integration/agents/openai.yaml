@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Contract Integration"
+  short_description: "Bind ZK proofs safely to TON state"
+  default_prompt: "Use $ton-zk-contract-integration to connect this verifier to an artifact-bound, exact-parser, runtime-domain-bound, replay-safe TON state transition and review internal or external message economics."

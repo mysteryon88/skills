@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "curve": "bls12-381",
+  "scalarModulusDecimal": "52435875175126190479447740508185965837690552500527637822603658699938581184513",
+  "rules": {
+    "mutationPolicy": "Start from one locally and on-chain verified fixture, then apply exactly one listed mutation.",
+    "failureState": "Assert protected state, replay storage, outgoing actions, reserve, and balance delta, not only the exit code."
+  },
+  "fixtures": [
+    {
+      "id": "g1-one-byte-short",
+      "category": "g1",
+      "encodingHex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "lengthBytes": 47,
+      "expectedLayer": "integration-parser",
+      "expected": "Reject before any BLS opcode because compressed G1 must be exactly 48 bytes."
+    },
+    {
+      "id": "g1-valid-prefix-plus-tail",
+      "category": "g1",
+      "encodingHex": "97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb00",
+      "lengthBytes": 49,
+      "expectedLayer": "integration-parser",
+      "expected": "Reject the extra tail before the opcode; never accept only the 48-byte prefix."
+    },
+    {
+      "id": "g2-one-byte-short",
+      "category": "g2",
+      "encodingHex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "lengthBytes": 95,
+      "expectedLayer": "integration-parser",
+      "expected": "Reject before any BLS opcode because compressed G2 must be exactly 96 bytes."
+    },
+    {
+      "id": "scalar-equals-modulus",
+      "category": "scalar",
+      "valueDecimal": "52435875175126190479447740508185965837690552500527637822603658699938581184513",
+      "expectedLayer": "canonical-scalar-parser",
+      "expected": "Reject value >= BLS12-381 Fr modulus without modulo reduction."
+    },
+    {
+      "id": "scalar-modulus-plus-one",
+      "category": "scalar",
+      "valueDecimal": "52435875175126190479447740508185965837690552500527637822603658699938581184514",
+      "expectedLayer": "canonical-scalar-parser",
+      "expected": "Reject value >= BLS12-381 Fr modulus without modulo reduction."
+    },
+    {
+      "id": "sparse-public-input-keys",
+      "category": "public-input-dictionary",
+      "declaredCount": 3,
+      "keys": [0, 2],
+      "expectedLayer": "public-input-loader",
+      "expected": "Reject missing key 1; keys must be unique and contiguous from zero."
+    },
+    {
+      "id": "proof-slice-extra-bits",
+      "category": "cell-slice",
+      "mutation": {
+        "validPrefixBytes": 48,
+        "extraBits": 1,
+        "extraRefs": 0
+      },
+      "expectedLayer": "integration-parser",
+      "expected": "Reject a non-byte-aligned tail before the BLS opcode."
+    },
+    {
+      "id": "proof-slice-extra-reference",
+      "category": "cell-slice",
+      "mutation": {
+        "validPrefixBytes": 48,
+        "extraBits": 0,
+        "extraRefs": 1
+      },
+      "expectedLayer": "integration-parser",
+      "expected": "Reject unexpected references even when the bit prefix is valid."
+    }
+  ]
+}

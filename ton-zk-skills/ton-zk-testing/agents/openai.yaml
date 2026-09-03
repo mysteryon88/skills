@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Testing"
+  short_description: "Test and benchmark TON ZK integrations"
+  default_prompt: "Use $ton-zk-testing to build a layered TON ZK test suite covering proof tampering, field and BLS length boundaries, runtime domain, replay, message balance effects, gas, and code size."

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 2,
+  "reviewTarget": {
+    "repository": "urn:ton-zk:example-repository",
+    "revision": "0000000000000000000000000000000000000000",
+    "artifactSet": "release/artifact-manifest.json",
+    "artifactSetSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "tonIntegrationVerdict": "TON_INTEGRATION_READY",
+  "fullZkReleaseVerdict": "FULL_ZK_RELEASE_NOT_READY",
+  "phases": {
+    "circuitAudit": {
+      "status": "NOT_ASSESSED",
+      "evidence": [],
+      "blocker": "No independent circuit-constraint audit handoff was provided."
+    },
+    "proofSystemAudit": {
+      "status": "NOT_ASSESSED",
+      "evidence": [],
+      "blocker": "Proof-system soundness is outside the TON integration review."
+    },
+    "proverConverterAudit": {
+      "status": "NOT_ASSESSED",
+      "evidence": [],
+      "blocker": "Prover and conversion implementation were not reviewed."
+    },
+    "setupSrsReview": {
+      "status": "PASS",
+      "evidence": ["release/setup-provenance.json"]
+    },
+    "tonIntegrationAudit": {
+      "status": "PASS",
+      "evidence": ["reports/ton-integration-review.md"]
+    },
+    "deploymentEvidence": {
+      "status": "PASS",
+      "evidence": ["release/testnet-deployment.json"]
+    }
+  },
+  "ownerAcceptedRisks": []
+}

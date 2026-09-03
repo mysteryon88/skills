@@ -1,0 +1,6 @@
+{
+  "fixture": "documentation-only",
+  "protocol": "groth16",
+  "curve": "BLS12-381",
+  "nPublic": 12
+}

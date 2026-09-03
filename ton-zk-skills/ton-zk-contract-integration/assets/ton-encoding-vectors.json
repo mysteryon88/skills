@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "profileRegistryVersion": 1,
+  "hashTarget": "ordinary-level-0-cell-representation-hash",
+  "addressVectors": [
+    {
+      "id": "addr-std-wc0-zero-account",
+      "workchain": 0,
+      "accountIdHex": "0000000000000000000000000000000000000000000000000000000000000000",
+      "anycast": "none",
+      "expectedCellBitLength": 267,
+      "expectedCellDataWithTopUpHex": "80000000000000000000000000000000000000000000000000000000000000000010",
+      "expectedRepresentationHashHex": "61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c",
+      "expectedHigh128Hex": "61ab4641fa30d9310391025086eec65d",
+      "expectedLow128Hex": "200d79268e1b7cd402565e01ba64be3c"
+    },
+    {
+      "id": "addr-std-masterchain-repeated-01",
+      "workchain": -1,
+      "accountIdHex": "0101010101010101010101010101010101010101010101010101010101010101",
+      "anycast": "none",
+      "expectedCellBitLength": 267,
+      "expectedCellDataWithTopUpHex": "9fe02020202020202020202020202020202020202020202020202020202020202030",
+      "expectedRepresentationHashHex": "df80839de44140ddf31fd320aef8c19285286b60b965774a324856125c7050ae",
+      "expectedHigh128Hex": "df80839de44140ddf31fd320aef8c192",
+      "expectedLow128Hex": "85286b60b965774a324856125c7050ae"
+    }
+  ],
+  "cellVectors": [
+    {
+      "id": "ordinary-empty-cell",
+      "cell": {
+        "bitsHex": "",
+        "bitLength": 0,
+        "refs": []
+      },
+      "expectedCellDataWithTopUpHex": "",
+      "expectedRepresentationHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "expectedHigh128Hex": "96a296d224f285c67bee93c30f8a3091",
+      "expectedLow128Hex": "57f0daa35dc5b87e410b78630a09cfc7"
+    },
+    {
+      "id": "ordinary-deadbeef-with-empty-ref",
+      "cell": {
+        "bitsHex": "deadbeef",
+        "bitLength": 32,
+        "refs": [
+          {
+            "bitsHex": "",
+            "bitLength": 0,
+            "refs": []
+          }
+        ]
+      },
+      "expectedCellDataWithTopUpHex": "deadbeef",
+      "expectedRepresentationHashHex": "a0236c0885dd1a4567bd5851c8ee0d257baee150bd1a4a04cdc074ddde79a16d",
+      "expectedHigh128Hex": "a0236c0885dd1a4567bd5851c8ee0d25",
+      "expectedLow128Hex": "7baee150bd1a4a04cdc074ddde79a16d"
+    }
+  ],
+  "transportEquivalence": [
+    {
+      "id": "same-cell-different-boc-flags",
+      "cellVectorId": "ordinary-deadbeef-with-empty-ref",
+      "bocVariants": [
+        {
+          "hasIndex": false,
+          "hasCrc32": false,
+          "bocHex": "b5ee9c72010102010009000108deadbeef010000"
+        },
+        {
+          "hasIndex": true,
+          "hasCrc32": false,
+          "bocHex": "b5ee9c728101020100090007090108deadbeef010000"
+        },
+        {
+          "hasIndex": true,
+          "hasCrc32": true,
+          "bocHex": "b5ee9c72c101020100090007090108deadbeef010000f71b54f1"
+        }
+      ],
+      "expectedRepresentationHashHex": "a0236c0885dd1a4567bd5851c8ee0d257baee150bd1a4a04cdc074ddde79a16d",
+      "assertion": "Indexed, unindexed, and CRC32C-protected serialized BoCs decode to the same cell graph and representation hash."
+    }
+  ]
+}

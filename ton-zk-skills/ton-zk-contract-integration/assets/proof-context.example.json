@@ -1,0 +1,256 @@
+{
+  "schemaVersion": "4",
+  "protocol": "groth16",
+  "curve": "bls12-381",
+  "status": "development",
+  "circuitId": "private-transfer-v1",
+  "verifyingKey": {
+    "hashAlgorithm": "sha256",
+    "hash": "84d2bd6fb430e7e778784bc49377a79828f4e5d8226d58fd6b0c6cb5227adda9",
+    "hashScope": "exact-source-bytes",
+    "source": "verification-key.example.json"
+  },
+  "setup": {
+    "kind": "groth16-phase2",
+    "curve": "bls12-381",
+    "power": 12,
+    "capacity": 4096,
+    "artifacts": {
+      "powersOfTau": {
+        "source": "development-setup-not-bundled.ptau",
+        "hashAlgorithm": "sha256",
+        "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "hashScope": "exact-source-bytes"
+      },
+      "r1cs": {
+        "source": "circuit.r1cs",
+        "hashAlgorithm": "sha256",
+        "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "hashScope": "exact-source-bytes"
+      },
+      "finalZkey": {
+        "source": "circuit-final.zkey",
+        "hashAlgorithm": "sha256",
+        "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "hashScope": "exact-source-bytes"
+      }
+    },
+    "verificationCommands": {
+      "powersOfTau": "snarkjs powersoftau verify development-setup-not-bundled.ptau",
+      "finalZkey": "snarkjs zkey verify circuit.r1cs development-setup-not-bundled.ptau circuit-final.zkey"
+    },
+    "verificationEvidence": [
+      "development-only example; replace with fresh command output"
+    ],
+    "contributionEvidence": [
+      "development-only single contributor; not production-trusted"
+    ],
+    "releaseBinding": "development-only example; replace with the release artifact record"
+  },
+  "networkDomain": {
+    "network": "sandbox",
+    "globalIdSource": "tvm-config-19",
+    "expectedGlobalId": 0,
+    "workchain": 0,
+    "runtimeCheck": "required"
+  },
+  "contract": {
+    "domainId": "zk-examples.private-transfer",
+    "addressBinding": "public-input",
+    "expectedAddress": {
+      "format": "raw-workchain-account-id-v1",
+      "workchain": 0,
+      "accountId": "0000000000000000000000000000000000000000000000000000000000000000",
+      "anycast": "none"
+    }
+  },
+  "action": {
+    "name": "private-transfer",
+    "version": 1,
+    "opcode": 205943315
+  },
+  "publicInputs": [
+    {
+      "index": 0,
+      "name": "domainHash",
+      "type": "field",
+      "source": "main.domainHash",
+      "semantics": "Most-significant 248 bits of SHA-256 over a versioned, length-delimited encoding of runtime global_id, workchain, current contract address, application domain, circuit ID, VK hash, protocol, action/opcode and version",
+      "applicationCheck": "Read global_id from TVM config 19, serialize every field canonically, hash once, take the first 31 bytes big-endian, and require exact equality",
+      "encoding": "domain-hash-msb248-v1",
+      "bits": 248,
+      "range": {
+        "minimum": "0",
+        "maximum": "452312848583266388373324160190187140051835877600158453279131187530910662655",
+        "unit": "field-element"
+      }
+    },
+    {
+      "index": 1,
+      "name": "senderHashHigh128",
+      "type": "address-hash",
+      "source": "main.senderHashHigh128",
+      "semantics": "High 128 bits of the canonical 256-bit TON address cell hash for the authorized sender",
+      "applicationCheck": "Hash the canonical sender address cell, split the big-endian digest into two 128-bit limbs, and compare this high limb",
+      "bits": 128,
+      "encoding": "ton-address-cell-hash-high128-be-v1",
+      "encodingGroup": "sender-address-hash"
+    },
+    {
+      "index": 2,
+      "name": "senderHashLow128",
+      "type": "address-hash",
+      "source": "main.senderHashLow128",
+      "semantics": "Low 128 bits of the canonical 256-bit TON address cell hash for the authorized sender",
+      "applicationCheck": "Hash the canonical sender address cell, split the big-endian digest into two 128-bit limbs, and compare this low limb",
+      "bits": 128,
+      "encoding": "ton-address-cell-hash-low128-be-v1",
+      "encodingGroup": "sender-address-hash"
+    },
+    {
+      "index": 3,
+      "name": "recipientHashHigh128",
+      "type": "address-hash",
+      "source": "main.recipientHashHigh128",
+      "semantics": "High 128 bits of the canonical 256-bit TON address cell hash for the recipient",
+      "applicationCheck": "Hash the canonical recipient address cell, split the big-endian digest into two 128-bit limbs, and compare this high limb",
+      "bits": 128,
+      "encoding": "ton-address-cell-hash-high128-be-v1",
+      "encodingGroup": "recipient-address-hash"
+    },
+    {
+      "index": 4,
+      "name": "recipientHashLow128",
+      "type": "address-hash",
+      "source": "main.recipientHashLow128",
+      "semantics": "Low 128 bits of the canonical 256-bit TON address cell hash for the recipient",
+      "applicationCheck": "Hash the canonical recipient address cell, split the big-endian digest into two 128-bit limbs, and compare this low limb",
+      "bits": 128,
+      "encoding": "ton-address-cell-hash-low128-be-v1",
+      "encodingGroup": "recipient-address-hash"
+    },
+    {
+      "index": 5,
+      "name": "amount",
+      "type": "uint",
+      "source": "main.amount",
+      "semantics": "Transfer amount in token base units",
+      "applicationCheck": "Compare with the exact state delta and enforce 1 <= amount < 2^64",
+      "bits": 64,
+      "range": {
+        "minimum": "1",
+        "maximum": "18446744073709551615",
+        "unit": "token-base-unit"
+      },
+      "encoding": "uint-be-v1"
+    },
+    {
+      "index": 6,
+      "name": "stateRoot",
+      "type": "merkle-root",
+      "source": "main.stateRoot",
+      "semantics": "Current accepted commitment tree root",
+      "applicationCheck": "Compare with currentRoot in contract storage",
+      "encoding": "field-canonical-v1"
+    },
+    {
+      "index": 7,
+      "name": "nullifier",
+      "type": "nullifier",
+      "source": "main.nullifier",
+      "semantics": "One-time identifier derived from the spent note secret and domain",
+      "applicationCheck": "Require absent in usedNullifiers and insert after successful verification",
+      "encoding": "field-canonical-v1"
+    },
+    {
+      "index": 8,
+      "name": "validUntil",
+      "type": "timestamp",
+      "source": "main.validUntil",
+      "semantics": "Latest accepted Unix timestamp",
+      "applicationCheck": "Require blockchain.now() <= validUntil and bounded future validity",
+      "bits": 32,
+      "range": {
+        "minimum": "0",
+        "maximum": "4294967295",
+        "unit": "unix-seconds"
+      },
+      "encoding": "uint-be-v1"
+    },
+    {
+      "index": 9,
+      "name": "assetIdHigh128",
+      "type": "cell-hash",
+      "source": "main.assetIdHigh128",
+      "semantics": "High 128 bits of the canonical 256-bit asset cell hash",
+      "applicationCheck": "Hash the canonical asset cell, split the big-endian digest into two 128-bit limbs, and compare this high limb",
+      "bits": 128,
+      "encoding": "ton-cell-hash-high128-be-v1",
+      "encodingGroup": "asset-cell-hash"
+    },
+    {
+      "index": 10,
+      "name": "assetIdLow128",
+      "type": "cell-hash",
+      "source": "main.assetIdLow128",
+      "semantics": "Low 128 bits of the canonical 256-bit asset cell hash",
+      "applicationCheck": "Hash the canonical asset cell, split the big-endian digest into two 128-bit limbs, and compare this low limb",
+      "bits": 128,
+      "encoding": "ton-cell-hash-low128-be-v1",
+      "encodingGroup": "asset-cell-hash"
+    },
+    {
+      "index": 11,
+      "name": "actionVersion",
+      "type": "uint",
+      "source": "main.actionVersion",
+      "semantics": "Version of the private-transfer statement",
+      "applicationCheck": "Require exact equality to action.version",
+      "bits": 16,
+      "range": {
+        "minimum": "1",
+        "maximum": "1",
+        "unit": "protocol-version"
+      },
+      "encoding": "uint-be-v1"
+    }
+  ],
+  "domainSeparation": {
+    "inputName": "domainHash",
+    "fields": [
+      "network.globalId",
+      "network.workchain",
+      "contract.address",
+      "contract.domainId",
+      "circuit.id",
+      "verifyingKey.hash",
+      "protocol",
+      "action.name",
+      "action.version",
+      "action.opcode"
+    ],
+    "profile": "sha256-length-delimited-msb248-v1"
+  },
+  "replayProtection": {
+    "mode": "nullifier",
+    "inputName": "nullifier",
+    "storageKey": "usedNullifiers[field]",
+    "domainFields": [
+      "domainHash",
+      "senderHashHigh128",
+      "senderHashLow128",
+      "assetIdHigh128",
+      "assetIdLow128"
+    ]
+  },
+  "expiry": {
+    "inputName": "validUntil",
+    "clock": "blockchain-now",
+    "maxFutureSeconds": 3600
+  },
+  "stateBinding": {
+    "inputName": "stateRoot",
+    "source": "contract.storage.currentRoot",
+    "historyPolicy": "current-only"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Circuit Workflows"
+  short_description: "Build TON-compatible ZK proof artifacts"
+  default_prompt: "Use $ton-zk-circuit-workflows to design, inspect, adversarially test, and reproduce a BLS12-381 circuit artifact set with an explicit public-input contract."

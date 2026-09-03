@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON ZK Proofs"
+  short_description: "Route end-to-end ZK development on TON"
+  default_prompt: "Use $ton-zk-proofs to inspect this project and route the complete circuit-to-TON workflow with explicit capability, security, test, and deployment gates."
