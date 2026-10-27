@@ -1,7 +1,7 @@
 ---
 name: ton-zk-proofs
 description: "Use when planning or implementing an end-to-end TON zero-knowledge workflow across circuits, Groth16 or experimental PLONK, BLS12-381 artifacts, export-ton-verifier, Tolk/FunC/Tact integration, testing, or deployment."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"
@@ -15,7 +15,7 @@ Route TON ZK work without confusing circuit correctness, verifier validity, appl
 
 ## Operating Rules
 
-- Use `$groth16-systems` for general theory and review; this collection adds TON requirements.
+- Install `$groth16-systems` separately for general theory and review; this archive adds TON requirements. If unavailable, report missing evidence, continue only independent TON inspection, and do not claim general review or end-to-end readiness.
 - The bundled read-only helpers require Python 3.10+.
 - Inspect the repository and installed tools before changing files.
 - Treat the documented TON verifier path as BLS12-381; stop on BN254/bn128 until current platform support is independently proven.

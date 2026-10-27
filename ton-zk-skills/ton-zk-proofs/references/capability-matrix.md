@@ -8,15 +8,15 @@ Use this matrix to choose a route before writing code. “Supported” means the
 |---|---|---|---|---:|---:|---:|---|
 | Circom + snarkjs | Groth16 | BLS12-381 | `.zkey` or snarkjs VK JSON | Yes | Yes | Yes | Primary route |
 | Noname + snarkjs | Groth16 | BLS12-381 | `.zkey` or snarkjs VK JSON | Yes | Yes | Yes | Supported through R1CS/snarkjs |
-| Gnark | Groth16 | BLS12-381 | native JSON, native `.bin`, or converted snarkjs JSON | Yes | Yes | Yes | Supported in the 1 reference snapshot |
-| Arkworks | Groth16 | BLS12-381 | native bundle/VK JSON or converted snarkjs JSON | Yes | Yes | Yes | Supported in the 1 reference snapshot |
+| Gnark | Groth16 | BLS12-381 | native JSON, native `.bin`, or converted snarkjs JSON | Yes | Yes | Yes | Supported in the 2026-08-06 reference snapshot |
+| Arkworks | Groth16 | BLS12-381 | native bundle/VK JSON or converted snarkjs JSON | Yes | Yes | Yes | Supported in the 2026-08-06 reference snapshot |
 | Circom + snarkjs | PLONK | BLS12-381 | `.zkey` or compatible VK JSON | Yes | Yes | No documented template | Experimental |
 
 ## Hard constraints
 
 - The verifier templates in this collection target TON/TVM BLS12-381 operations. A BN254, bn128, or alt_bn128 artifact is a blocking mismatch, not an encoding inconvenience.
 - Proof, public signals, and VK must be generated from the same circuit build and setup.
-- Tolk was the default target in the 1 `export-ton-verifier` reference snapshot. Select FunC with `--func`; select supported Tact/Groth16 with `--tact`.
+- Tolk was the default target in the 2026-08-06 `export-ton-verifier` reference snapshot. Select FunC with `--func`; select supported Tact/Groth16 with `--tact`.
 - PLONK has transcript and public-input limits that must be checked by the installed `doctor` command. Do not copy a numeric limit from old documentation into application code.
 - Tact support is treated as Groth16-only unless the installed generator and tests prove otherwise.
 - Fift output is a compiler/build artifact, not a verifier source target in this workflow.

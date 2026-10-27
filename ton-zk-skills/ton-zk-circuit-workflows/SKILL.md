@@ -1,7 +1,7 @@
 ---
 name: ton-zk-circuit-workflows
 description: "Use when creating, compiling, proving, or converting TON-compatible circuits and artifacts with Circom, Noname, Gnark, Arkworks, snarkjs, gnark-to-snarkjs, or ark-snarkjs, especially when curve selection, public-input order, witness generation, or trusted setup matters."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"

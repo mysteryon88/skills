@@ -1,7 +1,7 @@
 ---
 name: ton-zk-contract-integration
 description: "Use when integrating a TON ZK verifier, proof/public-input cells or BoCs, wrappers, internal/external messages, global_id/state binding, authorization, or nonce/nullifier replay protection."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"

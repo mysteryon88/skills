@@ -1,7 +1,7 @@
 ---
 name: ton-zk-verifier-generation
 description: "Use when inspecting a .zkey, verification_key.json, Gnark JSON/binary, or Arkworks bundle and generating TON Groth16 or experimental PLONK verifiers and TypeScript wrappers with export-ton-verifier for Tolk, FunC, or Tact."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"

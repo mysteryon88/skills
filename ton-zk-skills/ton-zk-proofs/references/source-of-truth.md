@@ -28,6 +28,15 @@ TON ZK capabilities, CLI flags, compiler syntax, network configuration, and pack
 
 If sources disagree, state the installed version, target environment, exact discrepancy, and which source controls the current task. Runtime and executable evidence outweigh an unsupported documentation assumption, but unexplained divergence remains a release blocker.
 
+## Scoped metadata refresh — 2026-10-26
+
+The upstream [package metadata](https://github.com/mysteryon88/export-ton-verifier/blob/main/package.json)
+now identifies `export-ton-verifier` 3.1.0 with Node.js 24.22.1. This is a source
+metadata observation, not proof of a published package or a new compatibility test.
+The broader capability snapshot below remains dated 2026-08-06. Preserve existing
+project pins; inspect the installed generator and rerun its doctor/tests before
+using newer behavior. No dependencies or verification keys are upgraded by this note.
+
 ## Reference snapshot
 
 The collection was reviewed on 2026-08-06. At that snapshot:

@@ -1,7 +1,7 @@
 ---
 name: ton-zk-integration-review
 description: "Use when reviewing the TON integration boundary after proof-system artifacts exist, including canonical scalars, VK handling, public-input semantics, replay, messages, state, gas, or generated verifier edits. Do not use as the sole audit for circuit constraints, prover correctness, proof-system soundness, or ceremony execution."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"

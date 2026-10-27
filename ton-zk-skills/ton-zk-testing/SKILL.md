@@ -1,7 +1,7 @@
 ---
 name: ton-zk-testing
 description: "Use when testing TON zero-knowledge verifier contracts or integrations, including tampered proofs, malformed encodings, getters/messages, replay/state, gas, code size, or regression gates."
-license: Apache-2.0
+license: MIT
 metadata:
   author: "mysteryon88 / zk-examples"
   ecosystem: "ton"
