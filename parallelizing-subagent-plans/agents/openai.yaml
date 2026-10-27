@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallelizing Subagent Plans"
+  short_description: "Optimize safe critical-path plan overlays"
+  default_prompt: "Use $parallelizing-subagent-plans to compile this approved numbered plan or explicit plan bundle into a validated critical-path worktree schedule."
