@@ -15,6 +15,27 @@ This is a dated compatibility review, not a permanent network-status claim. Befo
 
 ## Mandatory compatibility record
 
+### o1js 3.1.0 security/API refresh — 2026-10-26
+
+The [tagged changelog](https://github.com/o1-labs/o1js/blob/v3.1.0/CHANGELOG.md)
+dates 3.1.0 to 2026-09-21; the [GitHub release](https://github.com/o1-labs/o1js/releases/tag/v3.1.0)
+was published on October 2. This scoped refresh does not update the older network snapshot.
+
+- Empty-public-key updates must not disappear as dummy updates; test that required
+  sender debits remain in the final call forest.
+- Nested methods bind the callee to its constructor token ID. Test same-address
+  calls with a substituted token ID.
+- Callee witnesses require full `AccountUpdate.check()` validation, including
+  canonical authorization flags. A matching hash alone cannot establish proof authorization.
+- `AccountUpdate.createIf()` now returns `OptionalAccountUpdate`; access its update
+  through `.value`, preserving the conditional inclusion semantics.
+
+Security fixes change verification keys. A minor version increment is not a safe
+cache/VK reuse signal: recompile and redeploy affected contracts with explicit
+authorization, recording source, package, VK and deployed-address provenance.
+Confirm the target network era first; do not migrate a Berkeley target merely
+because a newer Mesa package exists.
+
 Before code changes or operational instructions, record:
 
 ```text

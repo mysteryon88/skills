@@ -4,6 +4,10 @@ Use these references as starting points. Always verify current versions before p
 
 Last checked: 2026-08-26.
 
+Scoped o1js refresh: 2026-10-26, [v3.1.0 changelog](https://github.com/o1-labs/o1js/blob/v3.1.0/CHANGELOG.md)
+and [release](https://github.com/o1-labs/o1js/releases/tag/v3.1.0).
+Other source pins retain the 2026-08-26 review date; this is not a new full ecosystem review.
+
 ## Official Mina / o1js
 
 - Mina o1js intro: https://docs.minaprotocol.com/zkapps/o1js

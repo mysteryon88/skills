@@ -2,6 +2,10 @@
 
 Use this as a checklist during reviews.
 
+For tokens and nested calls, apply the [o1js 3.1.0 security checks](NETWORK_ERA_AND_O1JS_COMPATIBILITY.md):
+update pruning, constructor token binding and canonical callee authorization.
+Record whether the deployed verification key includes those fixes.
+
 ## 1. State read is not bound to current chain state
 
 Pattern:

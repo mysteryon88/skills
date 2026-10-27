@@ -4,6 +4,10 @@ Use this reference for deployment, verification-key changes, state-layout change
 
 ## Release identity
 
+Minor security releases can change verification keys: apply the
+[3.1.0 refresh](NETWORK_ERA_AND_O1JS_COMPATIBILITY.md) before reusing caches or a
+deployment manifest. An npm update alone does not patch an already deployed contract.
+
 Record one immutable release identity:
 
 ```text

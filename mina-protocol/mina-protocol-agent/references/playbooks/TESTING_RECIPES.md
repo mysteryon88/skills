@@ -2,6 +2,10 @@
 
 ## Invariant matrix template
 
+Include the [3.1.0 regression cases](NETWORK_ERA_AND_O1JS_COMPATIBILITY.md) for
+required debits, token substitution, callee authorization and conditional updates.
+Run them against the pinned package and deployment artifact identity.
+
 | Invariant | Happy path | Negative test | Edge test | Status |
 |---|---|---|---|---|
 | Unauthorized user cannot update state | valid user succeeds | attacker fails | old admin fails |  |
