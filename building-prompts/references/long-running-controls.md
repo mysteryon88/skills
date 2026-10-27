@@ -6,9 +6,11 @@ Activate `GOAL_DRIVEN`, `EVAL_LOOP`, or both only for a durable goal or repeated
 
 ## Durable goals
 
-Use `GOAL_DRIVEN` for one objective that is larger than a normal turn but smaller than an open-ended backlog. Render the target runtime's native shape: for Codex Goal mode, start with `/goal <objective>`; for a goal tool, explicitly request goal creation. Do not merely say that the executor is already in goal mode.
+Use `GOAL_DRIVEN` for one objective that is larger than a normal turn but smaller than an open-ended backlog. Render the target runtime's native shape: for Codex Goal mode, start with the literal `/goal ` prefix followed by the concrete objective; for a goal tool, explicitly request goal creation. Do not merely say that the executor is already in goal mode.
 
-For Codex Goal mode, the copy-ready artifact is invalid unless its first non-empty line is the literal `/goal <objective>` command. Mentioning `/goal` later, burying it in an explanation, or claiming that prompt text enables Goal mode does not satisfy this gate. If the target runtime cannot create a durable goal, return the capability gap instead of simulating persistence.
+For Codex Goal mode, the copy-ready artifact is invalid unless its first non-empty line starts with `/goal ` and contains a resolved, task-specific objective. Mentioning `/goal` later, burying it in an explanation, or claiming that prompt text enables Goal mode does not satisfy this gate. If the target runtime cannot create a durable goal, return the capability gap instead of simulating persistence.
+
+Derive that objective from the user's explicit requested outcome. Treat assistant reasoning, plans, status narration, and tool logs as supporting context: use confirmed details from them to bind scope and identifiers, but never promote their current activity or methodology into the objective. Resolve required values before rendering; a paste-ready goal with unresolved template fields is invalid and must instead request the missing decision or return the exact blocker allowed by the interaction contract.
 
 The goal must state the outcome, in-scope and excluded work, evidence that proves completion, checkpoint or progress-log expectations, and the exact success, decision, authority, and hard-blocker stopping conditions. Goal persistence never expands write authority.
 
