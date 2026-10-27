@@ -301,8 +301,12 @@ def _run_one_campaign(root, plan, mode, dry_run, custom_rules_mode):
     return {"status": "completed", "plan": plan, "manifest": manifest, "artifacts": artifacts}
 
 
-def run_campaign(root, target, mode="smoke", dry_run=False, all_entrypoints=False, custom_rules="none"):
+def run_campaign(root, target, mode="smoke", dry_run=False, all_entrypoints=False, custom_rules="none", allow_dirty=False):
     root = Path(root).resolve()
+    if not dry_run and not allow_dirty:
+        status = subprocess.run(["git", "-C", str(root), "status", "--porcelain=v1", "--untracked-files=all"], capture_output=True, text=True, check=False)
+        if status.returncode or status.stdout.strip():
+            raise ValueError("Live mutation requires a clean isolated checkout; --allow-dirty is only for an explicitly disposable copy/worktree.")
     plan = plan_mutation_run(root, target=target, all_entrypoints=all_entrypoints)
     if "runs" in plan:
         results = [
@@ -319,6 +323,7 @@ def main():
     parser.add_argument("--target", required=True, help="Target source file, contract name, or directory")
     parser.add_argument("--mode", choices=("smoke", "full"), default="smoke")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--allow-dirty", action="store_true", help="Allow source swapping only in an explicitly disposable isolated copy/worktree")
     parser.add_argument("--all-entrypoints", action="store_true")
     parser.add_argument("--custom-rules", choices=("none", "propose", "write-and-use"), default="none")
     args = parser.parse_args()
@@ -330,6 +335,7 @@ def main():
         dry_run=args.dry_run,
         all_entrypoints=args.all_entrypoints,
         custom_rules=args.custom_rules,
+        allow_dirty=args.allow_dirty,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
 

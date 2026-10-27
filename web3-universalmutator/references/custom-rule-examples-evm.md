@@ -69,7 +69,7 @@ Unchecked arithmetic and scaling:
 
 ```text
 1e18 ==> 1e6
-unchecked ==> 
+unchecked ==>
 ```
 
 Domain and chain assumptions:

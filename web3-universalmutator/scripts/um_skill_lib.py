@@ -117,7 +117,7 @@ LANGUAGE_HINTS = {
     ".fe": "fe",
 }
 
-RESULT_RE = re.compile(r"^(?:(?P<prefix>.+)\.)?(?P<kind>killed|not[-]?killed)\.txt$")
+RESULT_RE = re.compile(r"^(?:(?P<prefix>.+)\.)?(?P<kind>killed|not[-]?killed|timeout|compile[-_]error|invalid|flaky|skipped|equivalent|presumed[-_]equivalent)\.txt$")
 
 
 @dataclass(frozen=True)
@@ -1977,9 +1977,12 @@ def collect_artifacts(root):
             kind = match.group("kind").replace("-", "")
             if kind == "killed":
                 run["killed_file"] = relative_path
-            else:
+            elif kind == "notkilled":
                 run["notkilled_file"] = relative_path
                 run["notkilled_kind"] = "notkilled"
+            else:
+                normalized = {"compileerror": "compile_error", "compile_error": "compile_error", "presumedequivalent": "presumed_equivalent"}.get(kind, kind)
+                run[normalized + "_file"] = relative_path
             continue
         if path.suffix.lower() in {".out", ".err"}:
             prefix = path.stem
@@ -2001,6 +2004,13 @@ def collect_artifacts(root):
         run["killed_count"] = killed_count
         run["survived_count"] = survived_count
         run["mutation_score"] = (killed_count / total) if total else None
+        run["score_formula"] = "killed / (killed + survived); other outcomes excluded"
+        for kind in ("timeout", "compile_error", "invalid", "flaky", "skipped", "equivalent", "presumed_equivalent"):
+            if kind + "_file" in run:
+                count = _count_lines(root / run[kind + "_file"])
+                run[kind + "_count"] = count
+                total += count
+        run["total_mutants"] = total
         if not run.get("mutant_dir"):
             parent_dir = None
             for key in ("notkilled_file", "killed_file"):
@@ -2141,6 +2151,7 @@ def format_single_run_summary(run, target=None, project_type="web3", commands=No
     )
     if run.get("mutation_score") is not None:
         lines.append(f"- Mutation score: {run['mutation_score']:.3f}")
+        lines.append("- Formula: killed / (killed + survived); compile, timeout and other categories excluded.")
     if run.get("mutant_dir"):
         lines.append(f"- Mutant directory: {run['mutant_dir']}")
     if run.get("stdout_log") or run.get("stderr_log"):

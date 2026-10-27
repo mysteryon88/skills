@@ -5,9 +5,8 @@ description: "Use when the user specifically wants Web3 smart-contract mutation 
 
 # web3-universalmutator
 
-Version: see [VERSION](VERSION).
-
 Use this skill to run, troubleshoot, and analyze Web3-focused Universal Mutator workflows without guessing undocumented behavior. It is intentionally not a general Universal Mutator skill: use it only for supported Web3 smart-contract languages and frameworks. Keep `SKILL.md` as the control surface and load only the reference file that matches the repository and task.
+For snapshot-based multi-agent/background campaigns, use the coordinator when present; read [campaign integration](references/campaign-integration.md). The focused standalone helpers remain independently usable in an already isolated disposable checkout. A live dirty/non-Git checkout requires explicit `--allow-dirty`; this flag does not create isolation.
 Do not use this skill for non-Web3 Universal Mutator runs, pure fuzzing, input generation, or standalone Web3 audit workflows unless the task is explicitly comparing fuzzing with mutation testing.
 
 ## Supported Web3 Languages
@@ -75,7 +74,7 @@ Do not describe an entrypoint-focused campaign as full directory coverage. Use a
 9. For autonomous requests, prefer `scripts/run_campaign.py <repo> --target <target> --mode smoke` first; use `--mode full` only after the smoke path and baseline command are trustworthy.
 10. Treat planned `mutate` and `analyze_mutants` commands as templates until `scripts/detect_um_capabilities.py` confirms the command, language, and flag surface.
 11. Run the generated preflight steps. Run the baseline test command immediately after tooling verification. Do not start mutation generation if the baseline tests fail.
-12. Do not run `mutate` or `analyze_mutants` in parallel inside the same project checkout. Keep one project checkout sequential, or isolate parallel targets in separate worktrees or copies such as `.tmp/um-runs/<target-slug>`.
+12. Do not run `mutate` or `analyze_mutants` in parallel inside the same project checkout. Within an already isolated disposable checkout, keep execution sequential; isolate parallel targets in separate worktrees or copies such as `.tmp/um-runs/<target-slug>`.
 13. Warn the user that mutation analysis can take a long time because the test command may run once per mutant and can look stuck while a slow test is executing.
 14. Run the initial mutate command first so Universal Mutator performs its default compile check.
 15. If the default compile check fails because direct language compilers such as `tolk-js`, `tact`, `func-js`, or Solidity tooling are missing or not enough for the project, inspect the failure and rerun with the first `fallback_mutate_commands` entry.
@@ -136,9 +135,7 @@ Use the CLI reference for supported Web3 projects; use the TON reference when th
 - If a flag, exit-code meaning, or dry-run mode is not confirmed by the bundled references or the current repository source, mark it as not confirmed instead of inventing behavior.
 - Do not advise a command or flag unless `scripts/detect_um_capabilities.py` confirms it, local help confirms it, or the relevant reference explicitly marks it as version-dependent.
 - Keep mutation and analysis sequential inside one project checkout. Parallel mutation or analysis in the same checkout can corrupt swapped files, shared build artifacts, generated wrappers, compile caches, or test state.
-- Do not run `mutate` or `analyze_mutants` in parallel inside the same project checkout. If parallel work is required, use separate `git worktree` checkouts or copy the repository to `.tmp/um-runs/<target-slug>` per target.
-- Before any analyze run, require a clean tree or isolated worktree.
-- Prefer a clean worktree or an isolated `git worktree` before analysis commands that may swap source files in place.
+- Before analysis require an isolated worktree/copy; a clean original checkout alone does not preserve it during source swaps.
 - Never suggest commands containing `rm`, `git clean`, or other destructive cleanup shortcuts as part of a mutation workflow.
 - Verify that one target completes the full mutate plus analyze cycle before considering isolated parallel runs.
 - After mutation generation and after analysis, write or update `mutants/REPORT.md`; this report is the durable handoff, not an optional chat-only summary.
