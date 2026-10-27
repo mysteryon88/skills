@@ -1,0 +1,30 @@
+{
+  "lock_id": "inkscape-default",
+  "renderer": {
+    "basename": "inkscape",
+    "platforms": [
+      {
+        "platform": "linux",
+        "sha256": null,
+        "version_prefixes": [
+          "Inkscape 1.4"
+        ]
+      },
+      {
+        "platform": "macos",
+        "sha256": null,
+        "version_prefixes": [
+          "Inkscape 1.4"
+        ]
+      },
+      {
+        "platform": "windows",
+        "sha256": null,
+        "version_prefixes": [
+          "Inkscape 1.4"
+        ]
+      }
+    ]
+  },
+  "schema_version": 2
+}

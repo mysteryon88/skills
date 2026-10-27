@@ -1,0 +1,48 @@
+{
+  "concepts": [
+    {
+      "id": "mascot-spark",
+      "scores": {
+        "association_safety": 5,
+        "brand_or_series_fit": 5,
+        "metaphor_clarity": 4,
+        "optical_simplification": 5,
+        "silhouette_uniqueness": 5,
+        "small_size_readability": 5
+      },
+      "summary": "The family mascot presents one large four-point app token.",
+      "total": 29
+    },
+    {
+      "id": "mascot-badge",
+      "scores": {
+        "association_safety": 5,
+        "brand_or_series_fit": 5,
+        "metaphor_clarity": 3,
+        "optical_simplification": 5,
+        "silhouette_uniqueness": 3,
+        "small_size_readability": 5
+      },
+      "summary": "The mascot holds a generic rounded badge.",
+      "total": 26
+    },
+    {
+      "id": "mascot-multiple-props",
+      "scores": {
+        "association_safety": 4,
+        "brand_or_series_fit": 4,
+        "metaphor_clarity": 3,
+        "optical_simplification": 1,
+        "silhouette_uniqueness": 3,
+        "small_size_readability": 1
+      },
+      "summary": "The mascot carries several small product cues.",
+      "total": 16
+    }
+  ],
+  "draft": false,
+  "final": null,
+  "notes": "Reusable preset concept record. Every app-specific use requires a fresh preview, 100% actual-size review, and review-binding hashes.",
+  "schema_version": 2,
+  "selected_concept": "mascot-spark"
+}

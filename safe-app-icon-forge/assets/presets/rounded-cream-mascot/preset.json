@@ -1,0 +1,11 @@
+{
+  "id": "rounded-cream-mascot",
+  "large_svg": "icon-large.svg",
+  "license": "MIT",
+  "name": "Rounded Cream Mascot",
+  "origin": "Numeric family contract and 1024px artwork adapted from crafting-app-icons v1.0.0.",
+  "schema_version": 1,
+  "small_svg": "icon-small.svg",
+  "style_lock": "style-lock.json",
+  "version": "1.0.0"
+}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <title>Buba mascot large preset</title>
+  <desc>Editable large mascot base with a replaceable foreground metaphor</desc>
+  <defs>
+    <linearGradient id="tileGradient" x1="112" y1="96" x2="908" y2="936">
+      <stop offset="0" stop-color="#3856E8"/>
+      <stop offset="1" stop-color="#18B9A4"/>
+    </linearGradient>
+    <linearGradient id="creamGradient" x1="380" y1="250" x2="650" y2="820">
+      <stop offset="0" stop-color="#FFF9E8"/>
+      <stop offset="1" stop-color="#F3DDBB"/>
+    </linearGradient>
+    <clipPath id="tileClip">
+      <rect x="48" y="48" width="928" height="928" rx="224"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#tileClip)">
+    <rect x="48" y="48" width="928" height="928" fill="url(#tileGradient)"/>
+    <path d="M304 886C310 706 392 648 512 648C632 648 714 706 720 886Z" fill="url(#creamGradient)" stroke="#071A3C" stroke-width="32" stroke-linejoin="round"/>
+    <circle cx="512" cy="430" r="236" fill="url(#creamGradient)" stroke="#071A3C" stroke-width="32"/>
+    <path d="M326 344C350 230 428 178 520 178C618 178 690 236 704 336C644 286 578 266 506 268C438 270 378 294 326 344Z" fill="#FFF9E8"/>
+    <circle cx="438" cy="412" r="23" fill="#071A3C"/>
+    <circle cx="586" cy="412" r="23" fill="#071A3C"/>
+    <path d="M442 514C482 554 542 554 582 514" fill="none" stroke="#071A3C" stroke-width="31" stroke-linecap="round"/>
+    <g id="app-metaphor">
+      <circle cx="728" cy="670" r="146" fill="#FF705E" stroke="#071A3C" stroke-width="32"/>
+      <path d="M728 566C744 630 780 666 844 682C780 698 744 734 728 798C712 734 676 698 612 682C676 666 712 630 728 566Z" fill="#FFF9E8" stroke="#071A3C" stroke-width="24" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

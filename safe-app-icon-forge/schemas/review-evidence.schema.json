@@ -1,0 +1,177 @@
+{
+  "$id": "urn:safe-app-icon-forge:schema:review-evidence:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "environment": {
+      "additionalProperties": false,
+      "properties": {
+        "machine": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "platform": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "python_version": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "platform",
+        "machine",
+        "python_version"
+      ],
+      "type": "object"
+    },
+    "renderer": {
+      "additionalProperties": false,
+      "properties": {
+        "executable_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "lock_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "version_output": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version_output",
+        "lock_id",
+        "executable_sha256"
+      ],
+      "type": "object"
+    },
+    "review_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "review_output_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "review_source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "reviewed_assets": {
+      "additionalProperties": false,
+      "properties": {
+        "png": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "size": {
+                "enum": [
+                  16,
+                  20,
+                  24,
+                  32,
+                  40,
+                  48,
+                  64,
+                  128,
+                  256,
+                  512,
+                  1024
+                ]
+              }
+            },
+            "required": [
+              "size",
+              "sha256"
+            ],
+            "type": "object"
+          },
+          "maxItems": 11,
+          "minItems": 11,
+          "type": "array"
+        },
+        "review_png_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "review_svg_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "png",
+        "review_svg_sha256",
+        "review_png_sha256"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "skill_version": {
+      "const": "3"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "iconforge_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "large_svg_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "small_svg_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "style_lock_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "iconforge_sha256",
+        "large_svg_sha256",
+        "small_svg_sha256",
+        "style_lock_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "skill_version",
+    "source",
+    "renderer",
+    "environment",
+    "review_source_sha256",
+    "review_input_sha256",
+    "reviewed_assets",
+    "review_output_sha256"
+  ],
+  "title": "Safe App Icon Forge review evidence v1",
+  "type": "object"
+}

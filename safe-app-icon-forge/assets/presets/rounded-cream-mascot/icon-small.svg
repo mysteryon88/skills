@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <title>Buba mascot small preset</title>
+  <desc>Simplified mascot base for 16 to 32 pixels</desc>
+  <defs>
+    <linearGradient id="tileGradient" x1="112" y1="96" x2="908" y2="936">
+      <stop offset="0" stop-color="#3856E8"/>
+      <stop offset="1" stop-color="#18B9A4"/>
+    </linearGradient>
+    <clipPath id="tileClip">
+      <rect x="40" y="40" width="944" height="944" rx="236"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#tileClip)">
+    <rect x="40" y="40" width="944" height="944" fill="url(#tileGradient)"/>
+    <circle cx="474" cy="500" r="276" fill="#FFF4D9" stroke="#071A3C" stroke-width="48"/>
+    <circle cx="386" cy="478" r="34" fill="#071A3C"/>
+    <circle cx="554" cy="478" r="34" fill="#071A3C"/>
+    <path d="M390 610C438 654 510 654 558 610" fill="none" stroke="#071A3C" stroke-width="46" stroke-linecap="round"/>
+    <g id="app-metaphor">
+      <circle cx="734" cy="678" r="174" fill="#FF705E" stroke="#071A3C" stroke-width="48"/>
+      <path d="M734 548C754 628 800 674 880 694C800 714 754 760 734 840C714 760 668 714 588 694C668 674 714 628 734 548Z" fill="#FFF7E3" stroke="#071A3C" stroke-width="34" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

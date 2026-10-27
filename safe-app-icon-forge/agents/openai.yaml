@@ -1,0 +1,4 @@
+interface:
+  display_name: "Safe App Icon Forge"
+  short_description: "Design and safely package dual-tier app icons"
+  default_prompt: "Use $safe-app-icon-forge to translate the product from input to action to output, score exactly three materially different icon concepts, create independent large and optical-small SVG artwork, inspect the raster review sheet at 100%, and build, verify, and compare deterministic PNG/ICO packages with local Inkscape."

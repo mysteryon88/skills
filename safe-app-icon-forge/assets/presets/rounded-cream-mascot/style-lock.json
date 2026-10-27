@@ -1,0 +1,146 @@
+{
+  "canvas": {
+    "optical_center_tolerance_px": 88,
+    "safe_margin_px": 40,
+    "view_box": [
+      0,
+      0,
+      1024,
+      1024
+    ]
+  },
+  "form_character": "friendly rounded cream mascot, dark navy contour, dot eyes, simple smile, and one oversized app metaphor",
+  "geometry": {
+    "bounds": {
+      "large_head": [
+        276,
+        194,
+        472,
+        472
+      ],
+      "large_tile": [
+        48,
+        48,
+        928,
+        928
+      ],
+      "small_head": [
+        198,
+        224,
+        552,
+        552
+      ],
+      "small_tile": [
+        40,
+        40,
+        944,
+        944
+      ]
+    },
+    "eyes": {
+      "large_center_left": [
+        438,
+        412
+      ],
+      "large_center_right": [
+        586,
+        412
+      ],
+      "large_radius": 23,
+      "large_spacing": 148,
+      "small_center_left": [
+        386,
+        478
+      ],
+      "small_center_right": [
+        554,
+        478
+      ],
+      "small_radius": 34,
+      "small_spacing": 168
+    },
+    "forbidden_zones": [
+      [
+        360,
+        360,
+        300,
+        210
+      ]
+    ],
+    "metaphor_zone": {
+      "large": [
+        580,
+        500,
+        300,
+        300
+      ],
+      "small": [
+        584,
+        504,
+        320,
+        360
+      ]
+    },
+    "proportions": {
+      "large_eye_spacing_to_head_diameter": 0.313559322,
+      "large_head_diameter_to_canvas": 0.4609375,
+      "small_eye_spacing_to_head_diameter": 0.304347826,
+      "small_head_diameter_to_canvas": 0.5390625
+    },
+    "radii": {
+      "large_eye": 23,
+      "large_head": 236,
+      "large_tile": 224,
+      "small_eye": 34,
+      "small_head": 276,
+      "small_tile": 236
+    }
+  },
+  "lighting": {
+    "direction": "top-left",
+    "softness": 0.6
+  },
+  "outline": {
+    "large_width": 32,
+    "linecap": "round",
+    "linejoin": "round",
+    "small_width": 48
+  },
+  "palette": {
+    "roles": {
+      "background_end": "#18B9A4",
+      "background_start": "#3856E8",
+      "coral": "#FF705E",
+      "cream_large": "#FFF9E8",
+      "cream_shadow": "#F3DDBB",
+      "cream_small": "#FFF4D9",
+      "cream_small_highlight": "#FFF7E3",
+      "outline": "#071A3C"
+    }
+  },
+  "preset_id": "rounded-cream-mascot",
+  "preset_version": "1.0.0",
+  "schema_version": 1,
+  "small_size": {
+    "minimum_element_px": 1.5,
+    "minimum_gap_px": 1.25,
+    "simplifications": [
+      "remove fingers and tiny highlights",
+      "remove secondary props",
+      "enlarge dot eyes",
+      "shorten smile",
+      "increase contour and negative-space gaps"
+    ]
+  },
+  "style_id": "rounded-cream-mascot-family",
+  "style_version": "1.0.0",
+  "transparency": {
+    "full_bleed_allowed": false,
+    "transparent_corners": true
+  },
+  "visual_weight": {
+    "maximum": 0.86,
+    "minimum": 0.48,
+    "target": 0.68
+  }
+}

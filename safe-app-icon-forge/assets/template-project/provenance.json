@@ -1,0 +1,18 @@
+{
+  "references": [
+    {
+      "accessed_at": null,
+      "author": "safe-app-icon-forge contributors",
+      "copied_asset": false,
+      "id": "sample-original",
+      "inspiration_only": false,
+      "kind": "original",
+      "license": "MIT",
+      "permission": "Bundled as original MIT-licensed example artwork",
+      "rights_holder": "safe-app-icon-forge contributors",
+      "sha256": null,
+      "source": "Bundled sample artwork created for safe-app-icon-forge"
+    }
+  ],
+  "schema_version": 1
+}

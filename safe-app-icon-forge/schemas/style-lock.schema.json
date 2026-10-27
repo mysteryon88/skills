@@ -1,0 +1,258 @@
+{
+  "$id": "urn:safe-app-icon-forge:schema:style-lock:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "canvas": {
+      "additionalProperties": false,
+      "properties": {
+        "optical_center_tolerance_px": {
+          "maximum": 256,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "safe_margin_px": {
+          "maximum": 256,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "view_box": {
+          "const": [
+            0,
+            0,
+            1024,
+            1024
+          ]
+        }
+      },
+      "required": [
+        "view_box",
+        "safe_margin_px",
+        "optical_center_tolerance_px"
+      ],
+      "type": "object"
+    },
+    "form_character": {
+      "maxLength": 256,
+      "minLength": 1,
+      "type": "string"
+    },
+    "geometry": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "type": "object"
+        },
+        "eyes": {
+          "type": "object"
+        },
+        "forbidden_zones": {
+          "type": "array"
+        },
+        "metaphor_zone": {
+          "type": "object"
+        },
+        "proportions": {
+          "type": "object"
+        },
+        "radii": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "radii",
+        "proportions",
+        "eyes",
+        "bounds",
+        "metaphor_zone",
+        "forbidden_zones"
+      ],
+      "type": "object"
+    },
+    "lighting": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "enum": [
+            "top-left",
+            "top",
+            "top-right",
+            "none"
+          ]
+        },
+        "softness": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "direction",
+        "softness"
+      ],
+      "type": "object"
+    },
+    "outline": {
+      "additionalProperties": false,
+      "properties": {
+        "large_width": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "linecap": {
+          "enum": [
+            "butt",
+            "round",
+            "square"
+          ]
+        },
+        "linejoin": {
+          "enum": [
+            "miter",
+            "round",
+            "bevel"
+          ]
+        },
+        "small_width": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "large_width",
+        "small_width",
+        "linecap",
+        "linejoin"
+      ],
+      "type": "object"
+    },
+    "palette": {
+      "additionalProperties": false,
+      "properties": {
+        "roles": {
+          "additionalProperties": {
+            "pattern": "^#[0-9A-F]{6}$",
+            "type": "string"
+          },
+          "minProperties": 1,
+          "type": "object"
+        }
+      },
+      "required": [
+        "roles"
+      ],
+      "type": "object"
+    },
+    "preset_id": {
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preset_version": {
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "small_size": {
+      "additionalProperties": false,
+      "properties": {
+        "minimum_element_px": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "minimum_gap_px": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "simplifications": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "simplifications",
+        "minimum_element_px",
+        "minimum_gap_px"
+      ],
+      "type": "object"
+    },
+    "style_id": {
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      "type": "string"
+    },
+    "style_version": {
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "type": "string"
+    },
+    "transparency": {
+      "additionalProperties": false,
+      "properties": {
+        "full_bleed_allowed": {
+          "type": "boolean"
+        },
+        "transparent_corners": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "transparent_corners",
+        "full_bleed_allowed"
+      ],
+      "type": "object"
+    },
+    "visual_weight": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "target": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "target",
+        "minimum",
+        "maximum"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "style_id",
+    "style_version",
+    "preset_id",
+    "preset_version",
+    "canvas",
+    "palette",
+    "outline",
+    "geometry",
+    "lighting",
+    "form_character",
+    "visual_weight",
+    "small_size",
+    "transparency"
+  ],
+  "title": "Machine-readable icon style lock",
+  "type": "object"
+}

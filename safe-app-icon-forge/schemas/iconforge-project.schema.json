@@ -1,0 +1,212 @@
+{
+  "$id": "urn:safe-app-icon-forge:schema:project:2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "exports": {
+      "additionalProperties": false,
+      "properties": {
+        "ico_sizes": {
+          "items": {
+            "maximum": 256,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "large_sizes": {
+          "items": {
+            "maximum": 1024,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "png_sizes": {
+          "items": {
+            "maximum": 1024,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "small_sizes": {
+          "items": {
+            "maximum": 1024,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "png_sizes",
+        "ico_sizes",
+        "small_sizes",
+        "large_sizes"
+      ],
+      "type": "object"
+    },
+    "preset": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+              "type": "string"
+            },
+            "version": {
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "preview": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_sizes": {
+          "const": [
+            16,
+            20,
+            24,
+            32,
+            40,
+            48,
+            64,
+            128,
+            256
+          ]
+        },
+        "backgrounds": {
+          "const": [
+            "light",
+            "dark",
+            "neutral"
+          ]
+        },
+        "enabled": {
+          "const": true
+        },
+        "optical_center_overlay": {
+          "const": true
+        },
+        "safe_margin_overlay": {
+          "const": true
+        },
+        "taskbar": {
+          "const": true
+        }
+      },
+      "required": [
+        "enabled",
+        "actual_sizes",
+        "backgrounds",
+        "taskbar",
+        "safe_margin_overlay",
+        "optical_center_overlay"
+      ],
+      "type": "object"
+    },
+    "project": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "version"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "type": "string"
+    },
+    "renderer": {
+      "additionalProperties": false,
+      "properties": {
+        "lock_id": {
+          "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lock_id"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": 2
+    },
+    "sources": {
+      "additionalProperties": false,
+      "properties": {
+        "large_svg": {
+          "type": "string"
+        },
+        "small_svg": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "large_svg",
+        "small_svg"
+      ],
+      "type": "object"
+    },
+    "style_lock": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visual_review": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "project",
+    "sources",
+    "style_lock",
+    "provenance",
+    "visual_review",
+    "preset",
+    "exports",
+    "preview",
+    "renderer"
+  ],
+  "title": "Safe App Icon Forge project schema v2",
+  "type": "object"
+}

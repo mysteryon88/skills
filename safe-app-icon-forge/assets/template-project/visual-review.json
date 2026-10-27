@@ -1,0 +1,48 @@
+{
+  "concepts": [
+    {
+      "id": "replace-with-concept-a",
+      "scores": {
+        "association_safety": 3,
+        "brand_or_series_fit": 3,
+        "metaphor_clarity": 3,
+        "optical_simplification": 3,
+        "silhouette_uniqueness": 3,
+        "small_size_readability": 3
+      },
+      "summary": "Replace this starter record with a materially different metaphor and silhouette.",
+      "total": 18
+    },
+    {
+      "id": "replace-with-concept-b",
+      "scores": {
+        "association_safety": 3,
+        "brand_or_series_fit": 3,
+        "metaphor_clarity": 2,
+        "optical_simplification": 3,
+        "silhouette_uniqueness": 2,
+        "small_size_readability": 3
+      },
+      "summary": "Replace this starter record; changing only color or decoration is not a new concept.",
+      "total": 16
+    },
+    {
+      "id": "replace-with-concept-c",
+      "scores": {
+        "association_safety": 3,
+        "brand_or_series_fit": 3,
+        "metaphor_clarity": 2,
+        "optical_simplification": 3,
+        "silhouette_uniqueness": 2,
+        "small_size_readability": 2
+      },
+      "summary": "Replace this starter record with a third independent concept before preview.",
+      "total": 15
+    }
+  ],
+  "draft": true,
+  "final": null,
+  "notes": "Starter draft. Replace the brief, all three concepts, and both SVGs; set draft to false; run preview; review at 100%; then record the three preview hashes in final.",
+  "schema_version": 2,
+  "selected_concept": "replace-with-concept-a"
+}

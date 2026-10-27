@@ -1,0 +1,229 @@
+{
+  "$id": "urn:safe-app-icon-forge:schema:visual-review:2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "concepts": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "type": "string"
+          },
+          "scores": {
+            "additionalProperties": false,
+            "properties": {
+              "association_safety": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "brand_or_series_fit": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "metaphor_clarity": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "optical_simplification": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "silhouette_uniqueness": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "small_size_readability": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "association_safety",
+              "brand_or_series_fit",
+              "metaphor_clarity",
+              "optical_simplification",
+              "silhouette_uniqueness",
+              "small_size_readability"
+            ],
+            "type": "object"
+          },
+          "summary": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "total": {
+            "maximum": 30,
+            "minimum": 6,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "scores",
+          "total"
+        ],
+        "type": "object"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "type": "array"
+    },
+    "draft": {
+      "type": "boolean"
+    },
+    "final": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "backgrounds": {
+              "const": [
+                "light",
+                "dark",
+                "neutral",
+                "taskbar"
+              ]
+            },
+            "review_input_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "review_output_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "review_source_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "reviewed_sizes": {
+              "const": [
+                16,
+                20,
+                24,
+                32,
+                40,
+                48,
+                64,
+                128,
+                256
+              ]
+            },
+            "reviewer": {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scores": {
+              "additionalProperties": false,
+              "properties": {
+                "metaphor_recognition": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "optical_center": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "silhouette": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "small_size_readability": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "style_coherence": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "visual_weight": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "metaphor_recognition",
+                "optical_center",
+                "style_coherence",
+                "silhouette",
+                "small_size_readability",
+                "visual_weight"
+              ],
+              "type": "object"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "total": {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "view_scale_percent": {
+              "const": 100
+            }
+          },
+          "required": [
+            "status",
+            "scores",
+            "total",
+            "reviewed_sizes",
+            "backgrounds",
+            "reviewer",
+            "view_scale_percent",
+            "review_source_sha256",
+            "review_input_sha256",
+            "review_output_sha256"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "notes": {
+      "maxLength": 4000,
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 2
+    },
+    "selected_concept": {
+      "maxLength": 160,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "draft",
+    "concepts",
+    "selected_concept",
+    "final",
+    "notes"
+  ],
+  "title": "Safe App Icon Forge visual review v2",
+  "type": "object"
+}

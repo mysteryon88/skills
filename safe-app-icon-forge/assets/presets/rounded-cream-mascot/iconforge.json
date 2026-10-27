@@ -1,0 +1,85 @@
+{
+  "exports": {
+    "ico_sizes": [
+      16,
+      20,
+      24,
+      32,
+      40,
+      48,
+      64,
+      128,
+      256
+    ],
+    "large_sizes": [
+      40,
+      48,
+      64,
+      128,
+      256,
+      512,
+      1024
+    ],
+    "png_sizes": [
+      16,
+      20,
+      24,
+      32,
+      40,
+      48,
+      64,
+      128,
+      256,
+      512,
+      1024
+    ],
+    "small_sizes": [
+      16,
+      20,
+      24,
+      32
+    ]
+  },
+  "preset": {
+    "id": "rounded-cream-mascot",
+    "version": "1.0.0"
+  },
+  "preview": {
+    "actual_sizes": [
+      16,
+      20,
+      24,
+      32,
+      40,
+      48,
+      64,
+      128,
+      256
+    ],
+    "backgrounds": [
+      "light",
+      "dark",
+      "neutral"
+    ],
+    "enabled": true,
+    "optical_center_overlay": true,
+    "safe_margin_overlay": true,
+    "taskbar": true
+  },
+  "project": {
+    "id": "rounded-cream-mascot",
+    "title": "Rounded Cream Mascot",
+    "version": "1.0.0"
+  },
+  "provenance": "provenance.json",
+  "renderer": {
+    "lock_id": "inkscape-default"
+  },
+  "schema_version": 2,
+  "sources": {
+    "large_svg": "icon-large.svg",
+    "small_svg": "icon-small.svg"
+  },
+  "style_lock": "style-lock.json",
+  "visual_review": "visual-review.json"
+}

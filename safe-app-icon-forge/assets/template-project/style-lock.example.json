@@ -1,0 +1,106 @@
+{
+  "canvas": {
+    "optical_center_tolerance_px": 64,
+    "safe_margin_px": 40,
+    "view_box": [
+      0,
+      0,
+      1024,
+      1024
+    ]
+  },
+  "form_character": "rounded geometric forms with one dominant silhouette and restrained highlights",
+  "geometry": {
+    "bounds": {
+      "large_tile": [
+        64,
+        64,
+        896,
+        896
+      ],
+      "small_tile": [
+        64,
+        64,
+        896,
+        896
+      ]
+    },
+    "eyes": {
+      "large_radius": 14,
+      "large_spacing": 52,
+      "small_radius": 18,
+      "small_spacing": 64
+    },
+    "forbidden_zones": [],
+    "metaphor_zone": {
+      "large": [
+        220,
+        180,
+        584,
+        640
+      ],
+      "small": [
+        180,
+        160,
+        664,
+        704
+      ]
+    },
+    "proportions": {
+      "large_primary_shape": 0.56,
+      "small_primary_shape": 0.63
+    },
+    "radii": {
+      "large_center": 74,
+      "large_tile": 224,
+      "small_center": 92,
+      "small_tile": 236
+    }
+  },
+  "lighting": {
+    "direction": "top-left",
+    "softness": 0.55
+  },
+  "outline": {
+    "large_width": 36,
+    "linecap": "round",
+    "linejoin": "round",
+    "small_width": 52
+  },
+  "palette": {
+    "roles": {
+      "accent": "#FF705E",
+      "background_end": "#18BEA8",
+      "background_start": "#3856E8",
+      "center_blue": "#247FDF",
+      "highlight": "#FFF9E8",
+      "mint_highlight": "#8FF2D4",
+      "outline": "#071A3C",
+      "small_cream": "#FFF5D7",
+      "warm_highlight": "#FFD8A3"
+    }
+  },
+  "preset_id": null,
+  "preset_version": null,
+  "schema_version": 1,
+  "small_size": {
+    "minimum_element_px": 1.25,
+    "minimum_gap_px": 1.0,
+    "simplifications": [
+      "remove secondary orbit detail",
+      "increase outline width",
+      "increase negative-space gaps"
+    ]
+  },
+  "style_id": "generic-rounded-tile",
+  "style_version": "1.0.0",
+  "transparency": {
+    "full_bleed_allowed": false,
+    "transparent_corners": true
+  },
+  "visual_weight": {
+    "maximum": 0.82,
+    "minimum": 0.42,
+    "target": 0.62
+  }
+}

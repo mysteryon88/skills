@@ -1,0 +1,18 @@
+{
+  "references": [
+    {
+      "accessed_at": "2026-07-31",
+      "author": "crafting-app-icons contributors",
+      "copied_asset": false,
+      "id": "crafting-app-icons-buba",
+      "inspiration_only": false,
+      "kind": "local",
+      "license": "MIT",
+      "permission": "MIT license permits reuse with notice",
+      "rights_holder": "crafting-app-icons contributors",
+      "sha256": null,
+      "source": "crafting-app-icons v1.0.0 / assets/presets/buba-mascot"
+    }
+  ],
+  "schema_version": 1
+}

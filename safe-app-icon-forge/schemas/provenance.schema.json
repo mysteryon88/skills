@@ -1,0 +1,106 @@
+{
+  "$id": "urn:safe-app-icon-forge:schema:provenance:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "references": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accessed_at": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "copied_asset": {
+            "type": "boolean"
+          },
+          "id": {
+            "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$",
+            "type": "string"
+          },
+          "inspiration_only": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "local",
+              "url",
+              "user-provided",
+              "original"
+            ]
+          },
+          "license": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "permission": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rights_holder": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "source",
+          "author",
+          "rights_holder",
+          "license",
+          "accessed_at",
+          "permission",
+          "sha256",
+          "inspiration_only",
+          "copied_asset"
+        ],
+        "type": "object"
+      },
+      "maxItems": 256,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "references"
+  ],
+  "title": "Icon reference provenance",
+  "type": "object"
+}
