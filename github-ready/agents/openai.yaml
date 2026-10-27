@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Ready"
+  short_description: "Audit repositories before public GitHub release"
+  default_prompt: "Use $github-ready to audit this repository before publishing it on GitHub."
