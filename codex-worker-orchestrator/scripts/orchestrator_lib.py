@@ -421,6 +421,27 @@ def canonical_relative_path(value: str) -> str:
     return "/".join(parts)
 
 
+def artifact_path(root: Path, value: str) -> Path:
+    path = canonical_relative_path(value)
+    if ":" in path or "\x00" in path:
+        raise ValueError("artifact path cannot contain a stream or null byte")
+    artifact = root
+    for part in path.split("/"):
+        artifact = artifact / part
+        if is_link_junction_or_reparse(artifact):
+            raise ValueError("artifact path contains a link, junction, or reparse point")
+    artifact = artifact.resolve(strict=True)
+    artifact.relative_to(root)
+    if not stat.S_ISREG(artifact.stat().st_mode):
+        raise ValueError("artifact must be a regular file")
+    return artifact
+
+
+def artifact_identity(path: Path) -> str | None:
+    identity = path.stat()
+    return f"{identity.st_dev}:{identity.st_ino}" if identity.st_ino else None
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 

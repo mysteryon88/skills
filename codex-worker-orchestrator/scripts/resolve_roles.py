@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 """Compile a validated route from a request and discovered inventories.
 
-This module is deliberately a pure compiler.  It reads the canonical role and
-capability registries, applies conservative safety and budget rules, and never
-spawns agents, writes state, or installs skills.  The command line wrapper only
-handles JSON I/O and exit codes.
+This compiler reads the canonical registries and referenced planning evidence,
+applies conservative safety and budget rules, and never spawns agents, writes
+state, or installs skills. The command line wrapper handles JSON I/O and exits.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import tomllib
 from collections.abc import Iterable, Mapping, Sequence
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from orchestrator_lib import (
     RoleSpec,
+    artifact_identity,
+    artifact_path,
     atomic_write_json,
     canonical_relative_path,
     load_capability_packs,
@@ -27,6 +30,7 @@ from orchestrator_lib import (
     load_role_registry,
     validate_instance,
 )
+from run_state import RunStateError, show_run
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
@@ -35,16 +39,16 @@ ROUTE_SCHEMA_NAME = "route"
 
 READ_ONLY_INTENTS = {
     "explore-code", "research-docs", "architecture", "skeptic-review",
-    "plan-gap-analysis", "plan-review", "task-review", "final-review",
-    "security-review",
+    "spec-review", "plan-gap-analysis", "plan-review", "task-review", "final-review",
+    "security-review", "deep-analysis", "visual-analysis",
 }
 IMPLEMENTATION_INTENTS = {
     "quick-implementation", "bounded-implementation", "deep-fixed-implementation",
-    "test-authoring", "documentation",
+    "test-authoring", "documentation", "content-writing",
 }
-NATIVE_PARALLEL_INTENTS = READ_ONLY_INTENTS | {"test-execution"}
+NATIVE_PARALLEL_INTENTS = (READ_ONLY_INTENTS - {"deep-analysis"}) | {"test-execution"}
 REVIEW_INTENTS = {
-    "skeptic-review", "plan-gap-analysis", "plan-review", "task-review",
+    "skeptic-review", "spec-review", "plan-gap-analysis", "plan-review", "task-review",
     "final-review", "security-review",
 }
 WRITER_MUTATIONS = {"write", "documentation-only"}
@@ -115,11 +119,12 @@ def _load_routing_policy(package_root: Path) -> dict[str, Any]:
     if (
         not isinstance(lite_workflow, dict)
         or set(lite_workflow) != required_lite_workflow
-        or any(lite_workflow.get(key) is not True for key in required_lite_workflow)
+        or any(lite_workflow.get(key) is not True for key in required_lite_workflow - {"test_runner_required_after_write"})
+        or lite_workflow.get("test_runner_required_after_write") is not False
     ):
         raise ResolutionInputError(
             "routing policy must require a detailed root-authored Lite plan, "
-            "post-write Luna tests, and root diff review"
+            "proportionate post-write tests, and root diff review"
         )
     if not isinstance(capabilities, dict) or capabilities.get("auto_install") is not False or capabilities.get("discovered_skills_only") is not True:
         raise ResolutionInputError("routing policy must disable capability auto-install")
@@ -398,6 +403,42 @@ def _high_rigor(request: Mapping[str, Any]) -> bool:
     )
 
 
+def _root_owns_architecture(request: Mapping[str, Any]) -> bool:
+    return (
+        request.get("root_model") in {"gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol", "gpt-5.6-sol"}
+        and not request.get("independent_analysis_required", False)
+    )
+
+
+def _small_inline_task(request: Mapping[str, Any]) -> bool:
+    return (
+        request["complexity"] in {"trivial", "low"}
+        and request["risk"] == "low"
+        and request["uncertainty"] == "low"
+        and not request["security_sensitive"]
+        and not request["requires_runtime_reproduction"]
+        and not (request.get("delegation") and request["delegated_execution_selected"])
+        and (not request.get("delegation") or len(request["independent_packages"]) < 2)
+        and (
+            (request["complexity"] == "trivial" and request["mutation"] == "none"
+             and request["intent"] not in REVIEW_INTENTS | {"architecture", "deep-analysis"})
+            or
+            (request["intent"] in {"explore-code", "research-docs", "visual-analysis"} and request["mutation"] in {"none", "read"})
+            or (
+                request["intent"] == "architecture"
+                and request["mutation"] in {"none", "read"}
+                and not request.get("independent_analysis_required", False)
+            )
+            or (
+                request["intent"] in IMPLEMENTATION_INTENTS | {"inline"}
+                and request["mutation"] == "write"
+                and bool(request["write_surfaces"])
+                and (request["approved_design"] or request["intent"] == "quick-implementation")
+            )
+        )
+    )
+
+
 def _role_sort_key(spec: RoleSpec, registry_order: Mapping[str, int]) -> tuple[int, int, str]:
     return spec.cost_rank, registry_order[spec.name], spec.name
 
@@ -405,17 +446,38 @@ def _role_sort_key(spec: RoleSpec, registry_order: Mapping[str, int]) -> tuple[i
 def _cheapest_registered_role(
     registry: Mapping[str, RoleSpec],
     intent: str,
+    model: str | None = None,
 ) -> str | None:
     registry_order = {name: index for index, name in enumerate(registry)}
-    candidates = [spec for spec in registry.values() if intent in spec.intents]
+    candidates = [spec for spec in registry.values()
+                  if intent in spec.intents and (model is None or spec.model == model)]
     if not candidates:
         return None
     return min(candidates, key=lambda spec: _role_sort_key(spec, registry_order)).name
 
 
+def _primary_model(request: Mapping[str, Any], install_mode: str) -> str | None:
+    intent = request["intent"]
+    if intent in {"quick-implementation", "bounded-implementation"}:
+        if _high_rigor(request):
+            return "gpt-6.1-sol"
+        if install_mode == "hard":
+            return "gpt-6.1-terra"
+    if intent == "deep-fixed-implementation" and (
+        request["uncertainty"] == "high" or request["risk"] in {"high", "critical"}
+    ):
+        return "gpt-6.1-sol"
+    if intent in {"visual-analysis", "content-writing", "test-authoring"} and _high_rigor(request):
+        return "gpt-6.1-sol"
+    if intent == "integration-debugging" and request["confirmed_root_cause"]:
+        return "gpt-6.1-sol"
+    return None
+
+
 def _candidate_roles(
     request: Mapping[str, Any],
     registry: Mapping[str, RoleSpec],
+    install_mode: str = "hard",
 ) -> tuple[list[str], bool]:
     intent = str(request["intent"])
     if intent == "inline":
@@ -424,13 +486,13 @@ def _candidate_roles(
         investigative = _cheapest_registered_role(registry, "reproduce-runtime")
         return ([investigative] if investigative else []), False
     if intent == "architecture":
-        architect = _cheapest_registered_role(registry, "architecture")
-        skeptic = _cheapest_registered_role(registry, "skeptic-review") if _high_rigor(request) else None
+        architect = None if _root_owns_architecture(request) else _cheapest_registered_role(registry, "architecture")
+        skeptic = _cheapest_registered_role(registry, "skeptic-review")
         return ([name for name in (architect, skeptic) if name is not None], bool(skeptic))
-    if intent in {"skeptic-review", "plan-gap-analysis", "plan-review"}:
+    if intent in {"skeptic-review", "spec-review", "plan-gap-analysis", "plan-review"}:
         skeptic = _cheapest_registered_role(registry, intent)
         return ([skeptic] if skeptic else []), _high_rigor(request)
-    primary = _cheapest_registered_role(registry, intent)
+    primary = _cheapest_registered_role(registry, intent, _primary_model(request, install_mode))
     if primary is None:
         raise ResolutionInputError(f"no canonical role is registered for intent: {intent}")
     return [primary], False
@@ -452,17 +514,124 @@ def _fallback_chain(
     return result
 
 
+def _accepted_artifact(
+    project_root: Path, reference: Mapping[str, Any], kind: str,
+    registry: Mapping[str, RoleSpec],
+) -> tuple[str, datetime, datetime, Mapping[str, Any]]:
+    root = project_root.resolve(strict=True)
+    path = canonical_relative_path(reference["path"])
+    artifact = artifact_path(root, path)
+    path = artifact.relative_to(root).as_posix()
+    with artifact.open("rb") as handle:
+        digest = hashlib.file_digest(handle, "sha256").hexdigest()
+    state = show_run(root, reference["review_run_id"])
+    candidates = []
+    referenced_index = next((index for index, report in enumerate(state["reports"])
+                             if report.get("report_id", report["task_id"]) == reference["review_report_id"]), -1)
+    for index, report in enumerate(state["reports"]):
+        metadata = report.get("artifact_review", {})
+        if metadata.get("kind") != kind:
+            continue
+        report_path = canonical_relative_path(metadata["path"])
+        report_identity = metadata.get("filesystem_identity")
+        try:
+            report_artifact = artifact_path(root, report_path)
+            report_path = report_artifact.relative_to(root).as_posix()
+            if report_identity is None:
+                report_identity = artifact_identity(report_artifact)
+        except FileNotFoundError:
+            if report_identity is None and index > referenced_index and report_path != path:
+                raise ValueError("later missing artifact has no recorded filesystem identity; obtain a fresh review")
+        candidates.append((report, report_path, report_identity))
+    identity = artifact_identity(artifact)
+    identities = {identity} if identity is not None else set()
+    # Preserve target history without merging later files occupying an alias.
+    identities.update(report_identity for _, report_path, report_identity in candidates
+                      if report_path == path and report_identity is not None)
+    matching = [report for report, report_path, report_identity in candidates
+                if report_path == path or report_identity in identities]
+    if not matching or matching[-1].get("report_id", matching[-1]["task_id"]) != reference["review_report_id"]:
+        raise ValueError("reference must identify the latest applicable artifact review report")
+    report = matching[-1]
+    metadata = report["artifact_review"]
+    role = registry.get(report["role"])
+    if report["role"] not in {"skeptic", "sol_reviewer"} or role is None or not _is_read_only(role):
+        raise ValueError("artifact review requires a dispatched read-only skeptic or Sol reviewer")
+    if state["status"] in {"blocked", "failed"} or report["status"] != "DONE" or report["findings"] or report["changed_files"]:
+        raise ValueError("artifact review has unresolved findings, unsuccessful status, or authoring changes")
+    if metadata["author_id"] != reference["author_id"] or metadata["sha256"] != digest:
+        raise ValueError("artifact author or current SHA256 differs from the reviewed artifact")
+    if metadata["author_id"].strip().casefold() == metadata["reviewer_id"].strip().casefold():
+        raise ValueError("artifact reviewer must be independent of its author")
+    report_id = reference["review_report_id"]
+    decisions = [entry for entry in state["reconciliation"]["decisions"] if entry["report_id"] == report_id]
+    if not decisions or decisions[-1]["decision"] != "ACCEPT":
+        raise ValueError("artifact review needs a current root ACCEPT ruling")
+    recorded = [entry["at"] for entry in state["history"] if entry["reason"] == f"report:{report_id}"]
+    if not recorded:
+        raise ValueError("artifact review has no recorded report event")
+    return (digest, datetime.fromisoformat(decisions[-1]["at"].replace("Z", "+00:00")),
+            datetime.fromisoformat(recorded[-1].replace("Z", "+00:00")), metadata)
+
+
+def _planning_prerequisites(
+    request: Mapping[str, Any], registry: Mapping[str, RoleSpec],
+    project_root: Path | None, *, simple: bool,
+) -> list[str]:
+    if simple:
+        return []
+    plan_stage = (
+        (request["phase"] == "planning" and request["intent"] != "spec-review")
+        or request["intent"] in {"plan-review", "plan-gap-analysis"}
+    )
+    write_stage = request["mutation"] == "write"
+    if not plan_stage and not write_stage:
+        return []
+    planning = request.get("planning", {"kind": "substantive"})
+    if planning["kind"] == "settled":
+        if (request["approved_design"] and not _high_rigor(request)
+                and not request["security_sensitive"] and not request.get("independent_analysis_required", False)):
+            return []
+        return ["Settled recipes require an approved design without high-rigor, security, or independent-analysis work; supply accepted substantive planning evidence."]
+    if project_root is None:
+        return ["Substantive planning requires explicit --project-root and accepted specification/plan evidence."]
+    try:
+        if "specification" not in planning:
+            raise ValueError("accepted specification evidence is required before plan inputs or implementation")
+        spec = _accepted_artifact(project_root, planning["specification"], "specification", registry)
+        if write_stage:
+            if "plan" not in planning:
+                raise ValueError("accepted plan evidence is required before implementation")
+            plan = _accepted_artifact(project_root, planning["plan"], "plan", registry)
+            if plan[3].get("specification_sha256") != spec[0] or plan[2] <= spec[1]:
+                raise ValueError("plan review must follow acceptance of and bind the current specification SHA256")
+    except (OSError, ValueError, RunStateError) as exc:
+        return [f"Unmet substantive planning prerequisite: {exc}"]
+    return []
+
+
 def _workflow_gates(
     request: Mapping[str, Any],
     selected_roles: Sequence[str],
     registry: Mapping[str, RoleSpec],
     install_mode: str,
+    *,
+    blocked: bool,
 ) -> tuple[list[str], list[str]]:
     intent = str(request["intent"])
+    if blocked:
+        return [], ["Resolve the reported blocking prerequisites before execution."]
+    if not selected_roles:
+        quality = [
+            "Root performs the work, inspects the actual diff, and runs proportionate verification; no independent review is claimed.",
+        ]
+        if request["security_sensitive"]:
+            quality.append("Root must verify trust boundaries and failure behavior; if safety cannot be established, report the limitation before proceeding.")
+        return [], quality
     approval: list[str] = []
     if intent in {"architecture", "research-docs"}:
         approval.append("superpowers:brainstorming owns requirements and design approval")
-    if intent in {"skeptic-review", "plan-gap-analysis", "plan-review"}:
+    if intent in {"skeptic-review", "spec-review", "plan-gap-analysis", "plan-review"}:
         approval.append("The root owns the skeptic ruling and any replan decision")
     if intent in IMPLEMENTATION_INTENTS:
         if install_mode == "lite":
@@ -486,7 +655,20 @@ def _workflow_gates(
         "Validate task packets and agent reports against the bundled schemas.",
         "Child roles may not recursively delegate or invoke the orchestrator.",
     ]
-    write_selected = any(
+    if intent in {"architecture", "spec-review", "plan-gap-analysis", "plan-review"}:
+        quality.extend([
+            "Independently review each substantive specification before drafting its plan, then review the plan before implementation; root resolves material findings before dependent work.",
+            "The critic must be distinct from the artifact author and remain read-only; record artifact revision/digest, author, critic, accepted report, and root ruling before reusing unchanged review evidence.",
+            "Reuse an equivalent accepted review and resume the same critic across stages where useful; re-review load-bearing changes, not unchanged content or routine checklists.",
+            "Root adjudicates planning refinement rounds; the maximum is 3 rounds before escalating unresolved material findings without starting dependent work.",
+        ])
+    if intent == "deep-analysis":
+        quality.append(
+            "Astra is a last resort for extreme complexity: supply the prior Sol analysis, decisive evidence check, and unresolved question before dispatch."
+        )
+    write_selected = request["mutation"] == "write" or (
+        request["mutation"] == "diagnostic" and bool(request["write_surfaces"])
+    ) or any(
         _is_writer(registry[role]) or _is_diagnostic(registry[role])
         for role in selected_roles
     )
@@ -495,13 +677,13 @@ def _workflow_gates(
             quality.extend(
                 [
                     "The detailed Lite plan must include ordered steps, exact allowed files and write surfaces, protected interfaces, acceptance criteria, exact verification commands, dependencies, and stop conditions.",
-                    "luna_worker executes only the approved plan; luna_test_runner runs the exact verification commands after implementation.",
+                    "luna_worker executes only the approved plan; the root runs short quiet non-build checks, and luna_test_runner runs builds, noisy checks, and worthwhile long/independent checks from the same plan.",
                     "The root inspects the actual diff and test evidence and owns the completion decision; luna_test_runner is not a reviewer.",
                 ]
             )
         else:
             quality.append(
-                "Mandatory sol_reviewer / gpt-5.6-sol / xhigh review must accept the final integrated diff; no Terra fallback is allowed."
+                "Mandatory sol_reviewer / gpt-6.1-sol / xhigh review must accept the final integrated diff; no weaker fallback is allowed."
             )
         quality.append(
             "Use only write isolation supplied by the selected owner workflow; a route declaration is not a filesystem lock or worktree proof."
@@ -522,12 +704,13 @@ def _should_delegate_test(
             or len(request["independent_packages"]) > 1
         )
     threshold = int(policy["spawn_threshold_seconds"])
+    if context.get("is_build", False) or context["noisy_output"]:
+        return True
     if int(context["estimated_seconds"]) < threshold and context["blocks_next_step"]:
         return False
     return bool(
         int(context["estimated_seconds"]) >= threshold
         or context["parallel_value"]
-        or context["noisy_output"]
         or len(request["independent_packages"]) > 1
     )
 
@@ -552,6 +735,7 @@ def resolve_request(
     available_skills: Sequence[Any] | Mapping[str, Any] | None = None,
     *,
     package_root: Path | None = None,
+    project_root: Path | None = None,
 ) -> dict[str, Any]:
     """Return a deterministic, schema-valid route without dispatch side effects."""
 
@@ -605,8 +789,16 @@ def resolve_request(
     fallbacks: list[str] = []
     warnings: list[str] = []
     blocked_reasons: list[str] = []
-    force_inline = False
-    hard_write_skeptic: str | None = None
+    force_inline = _small_inline_task(request)
+    root_execution = intent == "inline" or (not request.get("delegation") and intent not in REVIEW_INTENTS)
+    write_route = (
+        intent in IMPLEMENTATION_INTENTS
+        or (intent == "inline" and request["mutation"] == "write")
+        or (intent == "integration-debugging" and request["confirmed_root_cause"])
+    )
+    file_change_route = request["mutation"] == "write" or (
+        request["mutation"] == "diagnostic" and bool(surfaces)
+    )
     parallel_strategy = "none"
     packages = request["independent_packages"]
     test_context = request.get("test_context")
@@ -615,11 +807,22 @@ def resolve_request(
         if isinstance(test_context, Mapping)
         else []
     )
+    if intent == "test-execution":
+        if not _should_delegate_test(request, policy["test_routing"]):
+            root_execution = True
+            force_inline = not file_change_route and not request["security_sensitive"]
+            warnings.append("Quiet blocking check is below the delegation threshold; root runs it while retaining required file-change/security review.")
+        elif request.get("delegation"):
+            force_inline = False
 
     companion_applicable = (
         request["approved_numbered_plan"]
         and request["delegated_execution_selected"]
+        and intent not in REVIEW_INTENTS | {"architecture"}
         and not request["user_forbids_subagents"]
+        and not force_inline
+        and not root_execution
+        and bool(request.get("delegation"))
     )
     companion_discovered = PARALLEL_COMPANION in skills
     companion_compatible = (
@@ -629,96 +832,75 @@ def resolve_request(
         len(packages) > 1
         and intent in NATIVE_PARALLEL_INTENTS
         and not request["user_forbids_subagents"]
+        and not force_inline
+        and not root_execution
+        and bool(request.get("delegation"))
         and (not companion_applicable or not companion_discovered)
-        and not (intent == "test-execution" and shared_test_resources)
     )
+    native_parallel = native_applicable and not (intent == "test-execution" and shared_test_resources)
 
+    if intent in READ_ONLY_INTENTS and request["mutation"] not in {"none", "read"}:
+        blocked_reasons.append("Read-only intent cannot use write or diagnostic mutation.")
+    if intent in IMPLEMENTATION_INTENTS and request["mutation"] != "write" and not force_inline:
+        blocked_reasons.append("Implementation route requires write mutation.")
+    if intent in {"reproduce-runtime", "test-execution"} and request["mutation"] not in {"none", "read", "diagnostic"}:
+        blocked_reasons.append("Runtime reproduction/test execution requires diagnostic or read mutation.")
+    if intent == "integration-debugging":
+        if request["confirmed_root_cause"] and request["mutation"] != "write":
+            blocked_reasons.append("Confirmed integration debugging requires write mutation.")
+        elif not request["confirmed_root_cause"] and request["mutation"] not in {"none", "read", "diagnostic"}:
+            blocked_reasons.append("Unconfirmed integration debugging requires diagnostic or read mutation.")
+    if intent == "deep-analysis" and not request["user_forbids_subagents"] and (
+        not request.get("escalation_reason") or request["complexity"] != "extreme"
+    ):
+        blocked_reasons.append("Astra analysis is reserved for extreme complexity with a recorded escalation reason; use Sol analysis for other tasks.")
+    if write_route and request["mutation"] == "write":
+        if not surfaces:
+            blocked_reasons.append("A writing route requires at least one canonical write surface.")
+        if not request["approved_design"] and intent != "quick-implementation":
+            if request["user_forbids_subagents"]:
+                warnings.append("Approved-design prerequisite is unmet; do not begin dependent implementation.")
+            else:
+                blocked_reasons.append("Write implementation requires an approved design.")
+    if install_mode == "lite" and file_change_route and (
+        _high_rigor(request) or intent == "integration-debugging" and request["confirmed_root_cause"]
+    ):
+        blocked_reasons.append("High-rigor risk or integration-debugging file changes, including diagnostics, require Hard mode.")
+    prerequisites = _planning_prerequisites(request, registry, Path(project_root) if project_root is not None else None,
+                                           simple=force_inline)
     if request["user_forbids_subagents"]:
-        warnings.append("User forbids subagents; the root agent must execute this request inline.")
-    elif intent == "inline":
-        warnings.append("Explicit inline intent produces a zero-agent route.")
-    elif (
-        request["complexity"] == "trivial"
-        and request["risk"] == "low"
-        and request["mutation"] in {"none", "read"}
-    ):
-        warnings.append("Trivial low-risk request remains inline.")
-    elif intent == "test-execution" and not _should_delegate_test(
-        request, policy["test_routing"]
-    ):
-        force_inline = True
-        warnings.append(
-            "Focused blocking test is below the delegation threshold; run it in the root to avoid subagent overhead."
-        )
+        warnings.extend(prerequisites)
+        if prerequisites or file_change_route or intent in REVIEW_INTENTS | {"architecture"}:
+            warnings.append("Independent-review prerequisite is unmet when subagents are forbidden; do not claim independent acceptance or begin dependent work requiring it.")
     else:
-        desired, high_rigor = _candidate_roles(request, registry)
-        if high_rigor and intent == "architecture" and len(desired) < 2:
-            blocked_reasons.append(
-                "High-rigor architecture requires both sol_architect and skeptic stages."
-            )
-        if intent in READ_ONLY_INTENTS and request["mutation"] not in {"none", "read"}:
-            blocked_reasons.append(
-                "Read-only intent cannot delegate with write or diagnostic mutation."
-            )
-        if (
-            intent == "integration-debugging"
-            and not request["confirmed_root_cause"]
-            and request["mutation"] not in {"none", "read", "diagnostic"}
-        ):
-            blocked_reasons.append(
-                "Unconfirmed integration debugging requires diagnostic or read mutation."
-            )
-        if intent == "deep-fixed-implementation" and not request["approved_design"]:
-            blocked_reasons.append("Deep fixed implementation requires an approved design.")
-        if (
-            intent in IMPLEMENTATION_INTENTS
-            and intent != "quick-implementation"
-            and not request["approved_design"]
-        ):
-            blocked_reasons.append("Write implementation requires an approved design.")
-        if (
-            intent == "integration-debugging"
-            and request["confirmed_root_cause"]
-            and not request["approved_design"]
-        ):
-            blocked_reasons.append(
-                "Confirmed integration debugging requires an approved design."
-            )
-        write_route = (
-            intent in IMPLEMENTATION_INTENTS
-            or (
-                intent == "integration-debugging"
-                and request["confirmed_root_cause"]
-            )
+        blocked_reasons.extend(prerequisites)
+    if (
+        request["mutation"] == "write"
+        and request["requires_runtime_reproduction"]
+        and not request["confirmed_root_cause"]
+    ):
+        blocked_reasons.append(
+            "Required runtime reproduction must establish the root cause before implementation; "
+            "complete a reproduce-runtime investigation, reconcile its evidence, then reroute."
         )
-        file_change_route = write_route or (
-            request["mutation"] == "diagnostic" and bool(surfaces)
-        )
-        if write_route and request["mutation"] == "write" and not surfaces:
+    elif blocked_reasons:
+        pass
+    elif request["user_forbids_subagents"]:
+        warnings.append("User forbids subagents; the root agent must execute this request inline.")
+    elif force_inline:
+        warnings.append("Root handles this task directly; delegation would duplicate work or add overhead.")
+    elif root_execution and not file_change_route and intent != "architecture" and not request["security_sensitive"]:
+        warnings.append("No bounded delegation benefit was supplied; root performs the optional work.")
+    else:
+        desired, _ = _candidate_roles(request, registry, install_mode)
+        if root_execution:
+            desired = [name for name in desired if "skeptic-review" in registry[name].intents] if intent == "architecture" else []
+        if intent == "architecture" and not any("skeptic-review" in registry[name].intents for name in desired):
             blocked_reasons.append(
-                "A writing route requires at least one canonical write surface."
+                "Substantive architecture requires architectural judgment and an independent skeptic stage."
             )
-        if install_mode == "lite" and write_route and _high_rigor(request):
-            blocked_reasons.append(
-                "High-rigor writes (including high/critical risk) require Hard mode; "
-                "Lite cannot provide the mandatory independent review stages."
-            )
-        if (
-            install_mode == "lite"
-            and intent == "integration-debugging"
-            and request["confirmed_root_cause"]
-        ):
-            blocked_reasons.append(
-                "Confirmed integration-debugging writes require Hard mode; "
-                "Lite cannot provide the mandatory independent review stages."
-            )
-        if install_mode == "hard" and write_route and _high_rigor(request):
-            hard_write_skeptic = _cheapest_registered_role(registry, "skeptic-review")
-            if hard_write_skeptic is None:
-                blocked_reasons.append(
-                    "High-rigor Hard writes require a registered skeptic stage."
-                )
-
+        if intent in {"spec-review", "plan-gap-analysis", "plan-review"} and not desired:
+            blocked_reasons.append("Planning review requires a registered independent critic.")
         def choose(
             required: str,
             *,
@@ -730,6 +912,16 @@ def resolve_request(
         ) -> str | None:
             chain = [required] + _fallback_chain(required, registry)
             for candidate in chain:
+                if candidate != required:
+                    diagnostic_fallback = selection_intent in {"reproduce-runtime", "integration-debugging"} and not request["confirmed_root_cause"]
+                    if selection_intent not in registry[candidate].intents and not diagnostic_fallback:
+                        rejected_reasons.setdefault(candidate, "Fallback does not support the requested intent.")
+                        continue
+                    if _is_writer(registry[required]) or selection_intent == "visual-analysis":
+                        tiers = {"gpt-6-luna": 1, "gpt-6.1-terra": 2, "gpt-6.1-sol": 3, "gpt-6-astra": 4}
+                        if tiers.get(registry[candidate].model, 0) < tiers.get(registry[required].model, 0):
+                            rejected_reasons.setdefault(candidate, "Required model tier cannot fall back to a lower tier.")
+                            continue
                 if candidate not in agents:
                     rejected_reasons.setdefault(
                         candidate,
@@ -758,7 +950,7 @@ def resolve_request(
                     )
                 else:
                     selected_reasons[candidate] = selected_reason or (
-                        f"Cheapest sufficient canonical role for intent {selection_intent}."
+                        f"Sufficient canonical role under the complexity and risk policy for intent {selection_intent}."
                     )
                 selected_names.append(candidate)
                 return candidate
@@ -768,20 +960,11 @@ def resolve_request(
             return None
 
         if not blocked_reasons:
-            if hard_write_skeptic is not None:
-                choose(
-                    hard_write_skeptic,
-                    selection_intent="skeptic-review",
-                    pressure_gate=True,
-                    selected_reason=(
-                        "Mandatory pre-write pressure test for a high-rigor Hard route."
-                    ),
-                )
             for required in desired:
                 choose(required)
 
             if file_change_route:
-                if install_mode == "lite":
+                if install_mode == "lite" and _should_delegate_test(request, policy["test_routing"]):
                     runner = _cheapest_registered_role(registry, "test-execution")
                     if runner is None:
                         blocked_reasons.append(
@@ -793,14 +976,14 @@ def resolve_request(
                             selection_intent="test-execution",
                             test_gate=True,
                             selected_reason=(
-                                "Required Lite post-write execution of the root plan's exact verification commands."
+                                "Worthwhile Lite post-write execution of the root plan's exact verification commands."
                             ),
                         )
                         if chosen_runner != "luna_test_runner":
                             blocked_reasons.append(
                                 "Lite post-write validation must resolve to luna_test_runner without fallback."
                             )
-                else:
+                elif install_mode == "hard":
                     reviewer = _cheapest_registered_role(registry, "final-review")
                     if reviewer is None:
                         blocked_reasons.append(
@@ -852,7 +1035,7 @@ def resolve_request(
         warnings.append(
             f"Delegate dependency topology to {PARALLEL_COMPANION}; it alone may emit the V2 executor overlay."
         )
-    elif native_applicable:
+    elif native_parallel:
         warnings.append(
             "Use conservative native parallel dispatch only for independent read/test packets."
         )
@@ -895,7 +1078,7 @@ def resolve_request(
     reviewer_count = sum(
         1
         for name in selected_names
-        if _is_reviewer(registry[name]) and name != hard_write_skeptic
+        if _is_reviewer(registry[name])
     )
     planned_instance_count = (
         len(packages) + max(0, len(selected_names) - 1)
@@ -934,11 +1117,16 @@ def resolve_request(
         {
             "role": name,
             "reason": selected_reasons.get(name, f"Selected for intent {intent}."),
+            "model": registry[name].model,
+            "reasoning_effort": registry[name].model_reasoning_effort,
+            "fork_turns": "none",
         }
         for name in selected_names
     ]
 
     write_ownership: list[dict[str, Any]] = []
+    if root_execution and file_change_route and surfaces and not blocked_reasons:
+        write_ownership.append({"role": "root", "surfaces": list(surfaces)})
     for name in selected_names:
         if (
             _is_writer(registry[name]) or _is_diagnostic(registry[name])
@@ -946,8 +1134,10 @@ def resolve_request(
             write_ownership.append({"role": name, "surfaces": list(surfaces)})
 
     approval_gates, quality_gates = _workflow_gates(
-        request, selected_names, registry, install_mode
+        request, selected_names, registry, install_mode, blocked=bool(blocked_reasons)
     )
+    if root_execution and file_change_route and selected_names and not blocked_reasons:
+        quality_gates.append("Root completes implementation, diff inspection, and proportionate verification before dispatching the required final/security reviewers.")
     write_route_selected = any(
         _is_writer(registry[name]) for name in selected_names
     )
@@ -965,13 +1155,8 @@ def resolve_request(
 
     inline_condition = (
         request["user_forbids_subagents"]
-        or intent == "inline"
         or force_inline
-        or (
-            request["complexity"] == "trivial"
-            and request["risk"] == "low"
-            and request["mutation"] in {"none", "read"}
-        )
+        or (root_execution and not selected_names)
     )
     if blocked_reasons:
         mode = "blocked"
@@ -980,7 +1165,7 @@ def resolve_request(
     elif companion_applicable and companion_compatible:
         mode = "handoff"
         parallel_strategy = "companion"
-    elif native_applicable:
+    elif native_parallel:
         mode = "parallel"
         parallel_strategy = "native"
     else:
@@ -999,7 +1184,7 @@ def resolve_request(
     task_instances: list[dict[str, Any]] = []
     parallel_waves: list[dict[str, Any]] = []
     if selected_names and mode not in {"inline", "blocked", "handoff"}:
-        if mode == "parallel":
+        if native_applicable:
             primary = selected_names[0]
             primary_instances = [
                 {
@@ -1010,7 +1195,7 @@ def resolve_request(
                 for index, package in enumerate(packages, start=1)
             ]
             task_instances.extend(primary_instances)
-            batch_size = (
+            batch_size = 1 if mode == "sequential" else (
                 int(policy["test_routing"]["max_parallel_runners"])
                 if intent == "test-execution"
                 else len(primary_instances)
@@ -1064,6 +1249,9 @@ def resolve_request(
 
     route: dict[str, Any] = {
         "workflow_owner": str(policy["workflow"]["root_owner"]),
+        "root_work": mode == "inline" or (mode == "sequential" and (
+            root_execution or intent == "architecture" and _root_owns_architecture(request)
+        )),
         "mode": mode,
         "parallel_strategy": parallel_strategy,
         "classification": classification,
@@ -1093,6 +1281,7 @@ def canonical_json(payload: Mapping[str, Any]) -> str:
 def render_text(route: Mapping[str, Any]) -> str:
     lines = [
         f"workflow_owner: {route['workflow_owner']}",
+        f"root_work: {str(route.get('root_work', False)).lower()}",
         f"mode: {route['mode']}",
         f"parallel_strategy: {route['parallel_strategy']}",
         f"classification: {route['classification']}",
@@ -1143,6 +1332,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--request", required=True, type=Path)
     parser.add_argument("--available-agents", type=Path)
     parser.add_argument("--available-skills", type=Path)
+    parser.add_argument("--project-root", type=Path, help="explicit trusted root for planning artifacts and review ledger")
     parser.add_argument("--format", choices=("json", "text"), default="json")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
@@ -1152,7 +1342,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ResolutionInputError("request JSON root must be an object")
         agents = _load_any_json(args.available_agents, label="available-agents") if args.available_agents else None
         skills = _load_any_json(args.available_skills, label="available-skills") if args.available_skills else None
-        route = resolve_request(request, agents, skills)
+        route = resolve_request(request, agents, skills, project_root=args.project_root)
     except ResolutionInputError as exc:
         print(f"invalid route input: {exc}", file=sys.stderr)
         return 2

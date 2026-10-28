@@ -3,16 +3,16 @@ expected_names = ["lite", "hard"]
 
 [[profiles]]
 name = "lite"
-description = "Root-authored detailed plan, Luna Max implementation, and Luna test execution."
+description = "Root-authored detailed plan, Luna Max implementation, and proportionate root or Luna checks."
 roles = ["luna_worker", "luna_test_runner"]
 default_max_threads = 2
 
 [[profiles]]
 name = "hard"
-description = "Full evidence, architecture, implementation, testing, skepticism, security, and review workflow."
+description = "Luna for fixed work, Terra for visual and scoped tasks, Sol for complex work/review; Astra only for extreme unresolved analysis."
 roles = [
   "repo_explorer", "docs_researcher", "runtime_investigator", "sol_architect",
-  "skeptic", "luna_worker", "terra_worker", "luna_test_runner",
-  "sol_reviewer", "security_reviewer", "docs_writer",
+  "skeptic", "luna_worker", "terra_worker", "sol_worker", "terra_analyst", "luna_test_runner",
+  "sol_reviewer", "security_reviewer", "docs_writer", "astra_advisor",
 ]
 default_max_threads = 4

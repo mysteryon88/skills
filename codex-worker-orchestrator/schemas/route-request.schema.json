@@ -13,7 +13,10 @@
   ],
   "properties": {
     "phase": {"type": "string", "enum": ["requirements", "investigation", "design", "planning", "implementation", "review", "verification", "documentation"]},
-    "intent": {"type": "string", "enum": ["inline", "explore-code", "research-docs", "reproduce-runtime", "architecture", "skeptic-review", "plan-gap-analysis", "plan-review", "quick-implementation", "bounded-implementation", "deep-fixed-implementation", "integration-debugging", "test-execution", "test-authoring", "task-review", "final-review", "security-review", "documentation"]},
+    "intent": {"type": "string", "enum": ["inline", "explore-code", "research-docs", "visual-analysis", "reproduce-runtime", "architecture", "deep-analysis", "skeptic-review", "spec-review", "plan-gap-analysis", "plan-review", "quick-implementation", "bounded-implementation", "deep-fixed-implementation", "integration-debugging", "test-execution", "test-authoring", "task-review", "final-review", "security-review", "documentation", "content-writing"]},
+    "root_model": {"type": "string", "minLength": 1},
+    "independent_analysis_required": {"type": "boolean"},
+    "escalation_reason": {"type": "string", "enum": ["conflicting-evidence", "failed-specialist-analysis", "extreme-complexity"]},
     "complexity": {"type": "string", "enum": ["trivial", "low", "moderate", "high", "extreme"]},
     "uncertainty": {"type": "string", "enum": ["low", "medium", "high"]},
     "risk": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
@@ -30,6 +33,23 @@
     "independent_packages": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 4},
     "write_surfaces": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "user_forbids_subagents": {"type": "boolean"},
+    "delegation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["benefit", "expected_output"],
+      "properties": {
+        "benefit": {"type": "string", "enum": ["independent-evidence", "specialist-analysis", "bounded-implementation", "parallel-progress"]},
+        "expected_output": {"type": "string", "pattern": "\\S", "maxLength": 2000}
+      }
+    },
+    "planning": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["substantive", "settled"]},
+        "specification": {"$ref": "#/$defs/artifactReference"},
+        "plan": {"$ref": "#/$defs/artifactReference"}
+      }
+    },
     "test_context": {
       "type": "object",
       "additionalProperties": false,
@@ -39,7 +59,20 @@
         "blocks_next_step": {"type": "boolean"},
         "parallel_value": {"type": "boolean"},
         "noisy_output": {"type": "boolean"},
+        "is_build": {"type": "boolean"},
         "shared_resources": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 20}
+      }
+    }
+  },
+  "$defs": {
+    "artifactReference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "author_id", "review_run_id", "review_report_id"],
+      "properties": {
+        "path": {"type": "string", "pattern": "\\S", "maxLength": 4096},
+        "author_id": {"type": "string", "pattern": "\\S", "maxLength": 200},
+        "review_run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+        "review_report_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"}
       }
     }
   }

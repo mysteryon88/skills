@@ -190,7 +190,8 @@ def validate_install_paths(
     agents_target: Path,
     config_path: Path,
 ) -> None:
-    if is_filesystem_root(skill_target) or skill_target == normalized(Path.home()):
+    physical_target = skill_target.resolve()
+    if is_filesystem_root(physical_target) or physical_target == Path.home().resolve():
         raise ValueError(f"Refusing dangerous skill target: {skill_target}")
     if skill_target.is_symlink():
         raise ValueError(f"Refusing to replace a symlinked skill target: {skill_target}")
@@ -227,7 +228,7 @@ def validate_install_paths(
     }
     for label, path in protected.items():
         try:
-            nested = path == skill_target or path.is_relative_to(skill_target)
+            nested = path.resolve().is_relative_to(physical_target)
         except ValueError:
             nested = False
         if nested:

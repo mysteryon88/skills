@@ -22,7 +22,7 @@ requires_allowed_files = true
 requires_acceptance_criteria = true
 requires_verification_commands = true
 requires_stop_conditions = true
-test_runner_required_after_write = true
+test_runner_required_after_write = false
 root_reviews_actual_diff = true
 
 [test_routing]

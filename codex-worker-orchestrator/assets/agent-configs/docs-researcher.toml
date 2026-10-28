@@ -1,8 +1,8 @@
 # managed-by: codex-worker-orchestrator
 name = "docs_researcher"
 description = "Source-verified external library, API, and documentation research with citation-ready evidence."
-model = "gpt-5.6-luna"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-terra"
+model_reasoning_effort = "low"
 model_reasoning_summary = "concise"
 model_verbosity = "low"
 sandbox_mode = "read-only"

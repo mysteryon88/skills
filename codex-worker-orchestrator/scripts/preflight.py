@@ -14,7 +14,6 @@ from pathlib import Path
 
 from orchestrator_lib import (
     is_link_junction_or_reparse,
-    load_capability_packs,
     load_install_profiles,
     load_role_registry,
 )
@@ -209,8 +208,6 @@ def _skill_files(root: Path, *, recursive: bool) -> list[Path]:
             elif stat.S_ISDIR(info.st_mode) and entry.name not in SKILL_SCAN_EXCLUDES:
                 if recursive or directory == root:
                     pending.append(path)
-        if not recursive and directory != root:
-            pending.clear()
     return sorted(found)
 
 
@@ -221,7 +218,7 @@ def discover_skill_inventory(
     *,
     include_default_globals: bool,
 ) -> list[str]:
-    """Discover project/global capability skills with project roots first."""
+    """Find local skill candidates; live session IDs remain authoritative."""
     project = absolute_lexical(project)
     codex_home = absolute_lexical(codex_home)
     package_neighbor_root = absolute_lexical(skill_path).parent.parent
@@ -238,7 +235,6 @@ def discover_skill_inventory(
             [
                 (user_home / ".codex" / "skills", user_home, True),
                 (user_home / ".agents" / "skills", user_home, True),
-                (user_home / ".codex" / "plugins" / "cache", user_home, True),
             ]
         )
     seen_roots: set[Path] = set()
@@ -253,19 +249,6 @@ def discover_skill_inventory(
             if name and name != PACKAGE_NAME:
                 discovered.add(name)
 
-    package_root = skill_path.parent
-    try:
-        alternatives = {
-            alternative
-            for pack in load_capability_packs(package_root).values()
-            for alternative in pack.skill_alternatives
-        }
-    except ValueError:
-        alternatives = set()
-    for alternative in alternatives:
-        short_name = alternative.rsplit(":", 1)[-1]
-        if short_name in discovered:
-            discovered.add(alternative)
     return sorted(discovered)
 
 
@@ -562,12 +545,12 @@ def main() -> int:
                 f"{path.name}: name is {data.get('name')!r}, expected {expected_name!r}"
             )
         if data.get("model") != model:
-            role_warnings.append(
-                f"{path.name}: model override {data.get('model')!r}, packaged default is {model!r}"
+            role_errors.append(
+                f"{path.name}: model is {data.get('model')!r}, expected {model!r}"
             )
         if data.get("model_reasoning_effort") != effort:
-            role_warnings.append(
-                f"{path.name}: effort override {data.get('model_reasoning_effort')!r}, packaged default is {effort!r}"
+            role_errors.append(
+                f"{path.name}: effort is {data.get('model_reasoning_effort')!r}, expected {effort!r}"
             )
         if data.get("sandbox_mode") != sandbox:
             role_errors.append(

@@ -1,65 +1,58 @@
 ---
 name: codex-worker-orchestrator
-description: Use when a non-trivial coding task may benefit from bounded implementation, specialist investigation, independent tests, skepticism, mandatory Hard-mode review, or isolated parallel work.
+description: Use when bounded delegation helps or substantive specifications/plans need independent critique. Handle simple questions, focused lookups, routine edits, and short quiet non-build checks directly.
 ---
 
 # Codex Worker Orchestrator
 
 <SUBAGENT-STOP>
-If you are already a spawned subagent, do not invoke this skill, orchestrate, review, or spawn. Execute only the dispatch brief.
+If already a spawned subagent, execute only the dispatch brief. Do not invoke this skill, orchestrate, or spawn.
 </SUBAGENT-STOP>
 
-## Core rule
+## First decide whether to delegate
 
-The root owns the workflow. Superpowers owns lifecycle methodology; this skill selects the smallest sufficient custom-agent set. Children never become controllers or delegate.
+Loading alone never requires spawning. Do not spawn when the user forbids subagents.
 
-Prefer one coherent packet over micro-delegation. Split only for a distinct role, independent evidence, isolated write surface, or separately useful long test.
+- **Direct:** simple questions, focused lookups, mechanical edits, known small fixes, short quiet non-build checks. No preflight, ledger, or install prompts. Material risk, uncertainty, or security impact prevents Direct.
+- **Delegate:** require bounded benefit exceeding overhead. Start with one child; add only distinct deliverables or required reviews.
+- **Escalate:** Sol handles material uncertainty/risk. Astra requires `extreme` complexity, unresolved prior Sol analysis, a decisive evidence check and recorded escalation reason.
 
-This skill owns role selection, bounded packets, report reconciliation, and completion gates. `parallelizing-subagent-plans` alone compiles an approved plan's topology; `orchestrating-parallel-worktree-changes-v2` alone executes validated parallel writer lanes.
+Reclassify on scope/evidence/risk/failure changes. File length and approved plans alone never require children.
 
-## Start
+## Delegation preflight
 
-1. **REQUIRED SUB-SKILL:** Invoke `superpowers:using-superpowers` before repository action or execution advice.
-2. Read applicable `AGENTS.md` files and confirm you are the root.
-3. Resolve the directory containing this `SKILL.md` as `<skill-dir>` and run `<skill-dir>/scripts/preflight.py`. Never resolve the preflight script from the repository CWD.
-4. Inspect actual available custom agents, profile, permissions, slots, spawn schema, and companions. Do not spawn when the user forbids subagents.
-5. If preflight does not report `ok: true` with `install_mode` `lite` or `hard`, do not route or spawn. Read [INSTALL.md](INSTALL.md), report the exact missing or conflicting roles, and present one documented install command for explicit user approval. Never run the installer or modify global Codex configuration without that approval. After a successful install, tell the user to start a new Codex session before routing.
-
-The live parent permission mode is the ceiling. Role configuration cannot bypass policy, approvals, unavailable models, or missing tools.
-
-## Choose a mode
-
-- **Lite:** exactly `luna_worker` and `luna_test_runner`. Root writes the detailed plan, worker implements, root inspects the diff, runner executes the planned checks, and root reconciles.
-- **Hard:** all registered roles. Use for architecture, uncertainty, runtime diagnosis, security-sensitive or cross-module work. Every Hard write requires `sol_reviewer` on Sol/xhigh without fallback.
-
-Lite requires an approved plan with ordered steps, exact files and write surfaces, protected interfaces, dependencies, binary acceptance criteria, exact checks, and stop conditions. Its sequence is:
-
-```text
-root plan -> luna_worker -> root diff -> luna_test_runner -> root reconciliation
-```
-
-The worker follows only that plan. The runner never edits tracked files or acts as reviewer. High-rigor or confirmed integration-debugging writes require Hard.
+1. Read `AGENTS.md`; use `superpowers:using-superpowers` and relevant lifecycle without repeating approvals.
+2. Resolve the directory containing this `SKILL.md` and run `<skill-dir>/scripts/preflight.py`. Never resolve the preflight script from the repository CWD.
+3. Inspect actual available custom agents, models, profile, slots, permissions, spawn schema and companions. The live parent permission mode is the ceiling.
+4. Require `ok: true` and `install_mode` `lite` or `hard` before spawning. Otherwise do not spawn. Continue safe Direct work if sufficient; otherwise report missing/conflicting roles and [INSTALL.md](INSTALL.md). Global installation/configuration needs user authorization and a new session afterward.
 
 ## Route the task
 
-Route through the applicable Superpowers process, including `superpowers:writing-plans`, `superpowers:test-driven-development`, `superpowers:executing-plans`, `superpowers:requesting-code-review`, `superpowers:using-git-worktrees`, and `superpowers:finishing-a-development-branch` when relevant. Read `references/routing-matrix.md` only when delegation, escalation, testing economics, or parallelism is relevant. Read `references/dispatch-contract.md` immediately before the first spawn.
+- **Lite:** `luna_worker` implements a detailed settled recipe; root inspects the diff and runs short quiet checks. `luna_test_runner` handles builds, noisy checks, and worthwhile long/independent checks. Include steps, files, interfaces, dependencies, acceptance, checks, and stops. High-rigor/integration writes require Hard.
+- **Hard:** registry roles are available on demand. Every nontrivial file-changing route, including root-written work, requires independent `sol_reviewer` on Sol/xhigh without weaker fallback; security-sensitive work also requires `security_reviewer`. Simple safe Direct edits remain zero-child.
 
-Validate the route request, run `<skill-dir>/scripts/resolve_roles.py` with `--available-agents` and `--available-skills` from preflight, and validate every packet against `task-packet.schema.json`. Use `run_state.py` for multi-agent, high-risk, or resumable work; it is a ledger, never schedules agents, and never supplies write isolation.
+Terra 6.1/low handles exploration/research; Terra/xhigh ordinary Hard quick/bounded and UI/code/content implementation; Terra/high read-only visual evidence. Luna/max retains fixed/deep implementation, focused tests and established documentation. Sol 6.1 owns high-rigor implementation, architecture, diagnosis and review. Volume alone never requires Sol; high uncertainty/risk does.
 
-For complex planning, keep judgment in root when the active root model is Sol; otherwise use `sol_architect` for plan inputs while Superpowers owns approval.
+Execution-only builds/tests use Luna/medium; build/noise overrides short duration. Return failures to Sol/Astra root or Sol specialists with compact evidence. No autonomous fixes/retries; reuse the runner after fixes.
 
-Before every spawn announce the role, actual agent type, purpose, and selection reason. Give one self-contained packet with ownership, acceptance criteria, exact checks, stop conditions, and output channel.
+Luna/Terra workers may escalate to Sol; downward fallback is forbidden. Missing required Sol blocks dispatch. Diagnose input/tool/environment failures before model escalation; pass evidence and failed approaches onward.
 
-Keep short blocking tests in root outside Lite. Dispatch long or independent checks only when useful. Shared ports, databases, fixtures, caches, or services force sequential execution.
+For substantive planning, Sol/Astra root authors decisions; `sol_architect` supplies distinct inputs when justified. Independently review the spec/design with `skeptic` before drafting its plan, then review the plan before implementation. Root resolves material findings and reuses accepted unchanged review. Simple checklists/settled recipes need no fresh critique. Inline cannot bypass this gate.
 
-Never place overlapping writers in one checkout. Parallel writers require independent packages, disjoint surfaces, isolated worktrees, a validated overlay, and explicit user approval. Otherwise serialize.
+Read `references/routing-matrix.md` only for routing details. Read `references/dispatch-contract.md` immediately before spawning.
 
-Discover the parallel companion project-first, then global. Without it, use only the conservative native fallback from the dispatch contract.
+Use `visual-analysis` for application screenshots, `content-writing` for technical drafts. Direct applies. Verify child tools/inputs: model capabilities grant no tools. Root owns unavailable interactive steps.
+
+Run `resolve_roles.py`: complete preflight JSON as `--available-agents`, exact active-session IDs as `--available-skills`; preserve companion incompatibility. Compare emitted registry `model`, `reasoning_effort`, `fork_turns="none"` with live role/schema before dispatch. Use supported isolated context; never silently inherit incorrect settings or invent numeric forks. Resolver never spawns or proves runtime identity. Optional delegation requires `delegation.benefit`/`expected_output`; otherwise root works with required reviews. Supply actual `root_model`; `deep-analysis` needs `escalation_reason`. Required reproduction blocks writes until cause confirmation. Validate packets; announce role, agent type, purpose and reason before spawning.
+
+Pass `--project-root` and `planning` review references. Resolver checks current hashes, independence, latest ACCEPT and spec-to-plan order. Planning requires accepted spec evidence. Nontrivial writes default substantive; approved settled recipes exempt only low-rigor, non-security work without independent-analysis requirements. See dispatch-contract fields/examples.
+
+Discover companions project-first, then global. `parallelizing-subagent-plans` alone compiles topology; `orchestrating-parallel-worktree-changes-v2` alone executes parallel writer lanes. Require disjoint surfaces, separate worktrees, validated overlay and user authorization; otherwise serialize. Shared-resource tests serialize with separate IDs/reports.
 
 ## Reconcile and finish
 
-After every report, record one decision with `run_state.py reconcile --task-id ... --report-id ... --decision ...`: `ACCEPT`, `REPAIR`, `INVESTIGATE`, `REPLAN`, or `BLOCK`. Give repair-round reports distinct `report_id` values under the same routed task. Concerns and follow-ups are advisory and never widen scope. Completion requires every report's current decision to be `ACCEPT` followed by fresh integrated verification.
+Use `run_state.py` for multi-agent, high-risk, or resumable work; reconcile reports as `ACCEPT`, `REPAIR`, `INVESTIGATE`, `REPLAN`, or `BLOCK`. Follow-ups preserve scope. Two failed writer attempts against one cause require systematic debugging; Terra stops and returns its attempts and evidence to root for that reset. Lite needs authorized Hard escalation or `BLOCK`.
 
-After two failed native-CWO writer attempts against the same claimed cause, run `superpowers:systematic-debugging` before another writer. In Lite, then request authorization to switch to Hard or record `BLOCK`; never call unavailable Hard specialists. In Hard, use `skeptic` or `sol_architect` when their documented triggers apply. This does not replace the V2 executor's fix policy.
+Record implementation/repair transitions before changes, invalidating verification. Completion requires diff inspection, verification and selected final/security reviews after the latest recorded change, resolved findings and accepted reports. Use `superpowers:verification-before-completion`.
 
-Hard completion requires accepted Sol/xhigh review. Lite completion requires root diff inspection and successful runner evidence. Missing reports, non-`ACCEPT` decisions, unresolved findings, or stale verification forbid completion. Invoke `superpowers:verification-before-completion` before success claims.
+Opt-in `reflect-and-improve`: inherit evidence; accept separately.

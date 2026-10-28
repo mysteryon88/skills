@@ -18,6 +18,19 @@
     "findings": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "concerns": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "recommended_next_step": {"type": "string", "minLength": 1},
-    "suggested_follow_ups": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "suggested_follow_ups": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "artifact_review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "path", "sha256", "author_id", "reviewer_id"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["specification", "plan"]},
+        "path": {"type": "string", "pattern": "\\S", "maxLength": 4096},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "filesystem_identity": {"type": "string", "pattern": "^[0-9]+:[1-9][0-9]*$"},
+        "author_id": {"type": "string", "pattern": "\\S", "maxLength": 200},
+        "reviewer_id": {"type": "string", "pattern": "\\S", "maxLength": 200},
+        "specification_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
   }
 }

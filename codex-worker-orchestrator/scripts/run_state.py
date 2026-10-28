@@ -49,7 +49,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-from orchestrator_lib import atomic_write_json, load_json, utc_now, validate_instance
+from orchestrator_lib import artifact_identity, artifact_path, atomic_write_json, load_json, utc_now, validate_instance
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
@@ -549,7 +549,9 @@ def _latest_durable_mutation(state: Mapping[str, Any]) -> datetime | None:
     latest: datetime | None = None
     for entry in state["history"]:
         reason = entry["reason"]
-        if reason.startswith(("route:", "report:", "acceptance:", "reconciliation:")):
+        if reason.startswith(("route:", "report:", "acceptance:", "reconciliation:")) or (
+            entry["from"] != entry["to"] and entry["to"] in {"implementing", "repairing"}
+        ):
             timestamp = _timestamp(entry["at"], "history.at")
             if latest is None or timestamp > latest:
                 latest = timestamp
@@ -591,6 +593,7 @@ def _completion_predicate(
     reports = state["reports"]
     report_task_ids: set[str] = set()
     report_ids: set[str] = set()
+    latest_reports: dict[str, Mapping[str, Any]] = {}
     for report in reports:
         _validate_report(report, error_type=error_type)
         task_id = report["task_id"]
@@ -606,9 +609,13 @@ def _completion_predicate(
         if report_id in report_ids:
             raise error_type(f"duplicate report_id: {report_id}")
         report_ids.add(report_id)
+        latest_reports[task_id] = report
+    # Historical failures remain immutable and require ACCEPT below; only a
+    # later successful report of the same task can resolve their status.
+    for report in latest_reports.values():
         if report["status"] in {"BLOCKED", "NEEDS_CONTEXT"}:
             raise error_type(
-                f"report {report_id!r} has non-success status {report['status']}; completion is refused"
+                f"report {_report_id(report)!r} has non-success status {report['status']}; completion is refused"
             )
     missing_reports = set(dispatch_instances) - report_task_ids
     if missing_reports:
@@ -631,6 +638,34 @@ def _completion_predicate(
     if non_accept:
         details = ", ".join(f"{report_id}={decision}" for report_id, decision in sorted(non_accept.items()))
         raise error_type("completion requires ACCEPT for every report; current decisions: " + details)
+
+    reviewers = {"sol_reviewer", "security_reviewer"}
+    writer_roles = {owner["role"] for owner in route["write_ownership"]}
+    change_reports = {
+        _report_id(report) for report in reports
+        if report["role"] not in reviewers
+        and (report["role"] in writer_roles or report["changed_files"])
+    }
+    report_events: dict[str, int] = {}
+    last_change = last_verification = -1
+    # Ledger order remains decisive when several events share one timestamp.
+    for index, entry in enumerate(state["history"]):
+        if entry["from"] != entry["to"] and entry["to"] in {"implementing", "repairing"}:
+            last_change = index
+        reason = entry["reason"]
+        if reason.startswith("report:"):
+            report_id = reason.removeprefix("report:")
+            report_events[report_id] = index
+            if report_id in change_reports:
+                last_change = index
+        elif reason == "verification:update":
+            last_verification = index
+    for report in latest_reports.values():
+        if report["role"] in reviewers and report_events.get(_report_id(report), -1) <= last_change:
+            raise error_type("final/security review must follow the latest implementation or diagnostic change")
+    if last_verification <= last_change:
+        raise error_type("integrated verification is stale after implementation or repair")
+
     integrated_at = state["verification"]["integrated_at"]
     if integrated_at is None:
         raise error_type("integrated verification is required")
@@ -707,6 +742,8 @@ def transition_run(project_root: str | os.PathLike[str], run_id: str, target: st
             raise Refusal("transition to the current status is not a lifecycle transition")
         if target not in LEGAL_TRANSITIONS[source]:
             raise Refusal(f"invalid lifecycle transition: {source} -> {target}")
+        if target in {"implementing", "repairing"}:
+            state["verification"]["integrated_at"] = None
         _append_event(state, now=now, target=target, reason=f"transition:{reason.strip()}")
 
     return _mutate(project_root, run_id, operation)
@@ -727,6 +764,15 @@ def record_report(project_root: str | os.PathLike[str], run_id: str, report: Map
     _validate_report(report)
     normalized_report = copy.deepcopy(dict(report))
     normalized_report.setdefault("report_id", normalized_report["task_id"])
+    if metadata := normalized_report.get("artifact_review"):
+        # Identity is recorder evidence, never a worker assertion.
+        metadata.pop("filesystem_identity", None)
+        try:
+            identity = artifact_identity(artifact_path(Path(project_root).resolve(strict=True), metadata["path"]))
+        except (OSError, ValueError):
+            identity = None  # Resolver still refuses unsafe or ambiguous paths.
+        if identity is not None:
+            metadata["filesystem_identity"] = identity
 
     def operation(state: dict[str, Any], now: str) -> None:
         route = state.get("route")

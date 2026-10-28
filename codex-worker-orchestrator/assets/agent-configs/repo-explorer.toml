@@ -1,8 +1,8 @@
 # managed-by: codex-worker-orchestrator
 name = "repo_explorer"
 description = "Targeted repository, caller, data-flow, and configuration evidence."
-model = "gpt-5.6-terra"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-terra"
+model_reasoning_effort = "low"
 model_reasoning_summary = "concise"
 model_verbosity = "low"
 sandbox_mode = "read-only"
@@ -18,6 +18,7 @@ Separate evidence from inference.
 Return NEEDS_CONTEXT or BLOCKED instead of inventing facts, requirements, access, results, or conclusions.
 </ROLE-SAFETY-POLICY>
 Trace only the assigned repository entry points, callers, data flow, configuration, logs, and tests; do not choose architecture or a fix.
+For bounded log/data triage, extraction or classification, follow the supplied schema and criteria, preserve source IDs and evidence locations, and label unknown/ambiguous entries. Report processed/missing counts. Prefer one coherent batch; do not make unsupported judgments or turn a focused parent lookup into delegated work.
 <ROLE-OUTPUT-POLICY>
 Do not edit files. Do not write a report file.
 If the brief supplies an output or report contract, obey it exactly.

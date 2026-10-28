@@ -56,7 +56,7 @@ Do not implement fixes or change production behavior.
 If the brief supplies an output or report contract, obey it exactly.
 </ROLE-OUTPUT-POLICY>"""
 TEST_ONLY_OUTPUT_POLICY = """<ROLE-OUTPUT-POLICY>
-Do not edit tracked files. Write only explicitly assigned untracked test logs or diagnostic artifacts on the declared write surface.
+Do not edit tracked files. Commands may write only explicitly assigned untracked build outputs, caches, test logs or diagnostic artifacts on the declared write surface. A build needing tracked/generated source changes must return NEEDS_CONTEXT before execution.
 Do not change production code, tests, configuration, dependencies, snapshots, or generated source.
 If the brief supplies an output or report contract, obey it exactly.
 </ROLE-OUTPUT-POLICY>"""
@@ -430,10 +430,15 @@ def validate_install_profiles(
         fail("Hard default_max_threads must be 4")
 
     required = {
-        "luna_worker": ("gpt-5.6-luna", "max", "workspace-write"),
-        "luna_test_runner": ("gpt-5.6-luna", "medium", "workspace-write"),
-        "skeptic": ("gpt-5.6-terra", "high", "read-only"),
-        "sol_reviewer": ("gpt-5.6-sol", "xhigh", "read-only"),
+        "repo_explorer": ("gpt-6.1-terra", "low", "read-only"),
+        "docs_researcher": ("gpt-6.1-terra", "low", "read-only"),
+        "docs_writer": ("gpt-6-luna", "max", "workspace-write"),
+        "luna_worker": ("gpt-6-luna", "max", "workspace-write"),
+        "terra_worker": ("gpt-6.1-terra", "xhigh", "workspace-write"),
+        "luna_test_runner": ("gpt-6-luna", "medium", "workspace-write"),
+        "skeptic": ("gpt-6.1-sol", "high", "read-only"),
+        "sol_reviewer": ("gpt-6.1-sol", "xhigh", "read-only"),
+        "astra_advisor": ("gpt-6-astra", "xhigh", "read-only"),
     }
     for name, (model, effort, sandbox) in required.items():
         spec = role_registry.get(name)
@@ -490,8 +495,8 @@ def validate_openai_yaml() -> None:
             fail(f"agents/openai.yaml: interface.{key} must be a non-empty string")
     if policy["products"] != ["CODEX"]:
         fail("agents/openai.yaml: policy.products must be exactly [CODEX]")
-    if policy["allow_implicit_invocation"] is not False:
-        fail("agents/openai.yaml: allow_implicit_invocation must be false")
+    if not isinstance(policy["allow_implicit_invocation"], bool):
+        fail("agents/openai.yaml: allow_implicit_invocation must be boolean")
     default_prompt = str(interface["default_prompt"])
     if "$codex-worker-orchestrator" not in default_prompt:
         fail(

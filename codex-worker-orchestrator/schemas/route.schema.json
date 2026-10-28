@@ -6,6 +6,7 @@
   "required": ["workflow_owner", "mode", "parallel_strategy", "classification", "selected_roles", "rejected_roles", "capability_packs", "task_instances", "parallel_waves", "write_ownership", "approval_gates", "quality_gates", "fallbacks", "warnings"],
   "properties": {
     "workflow_owner": {"type": "string", "minLength": 1},
+    "root_work": {"type": "boolean"},
     "mode": {"type": "string", "enum": ["inline", "sequential", "parallel", "blocked", "handoff"]},
     "parallel_strategy": {"type": "string", "enum": ["none", "native", "companion"]},
     "classification": {"type": "string", "minLength": 1},
@@ -27,7 +28,10 @@
       "required": ["role", "reason"],
       "properties": {
         "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
-        "reason": {"type": "string", "minLength": 1}
+        "reason": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "pattern": "\\S"},
+        "reasoning_effort": {"type": "string", "enum": ["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"]},
+        "fork_turns": {"type": "string", "const": "none"}
       }
     },
     "capabilityDecision": {
