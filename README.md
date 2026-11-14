@@ -9,7 +9,6 @@ Personal repository for Codex skills I write and maintain.
 | [github-ready](github-ready/SKILL.md)                                       | Read-only publication audit of secrets, Git history, repository hygiene, and licensing    |
 | [groth16-systems](groth16-systems/SKILL.md)                                  | Groth16 circuit and integration design, debugging, testing, and security review           |
 | [mina-protocol](mina-protocol/README.md)                                     | Mina Protocol/o1js zkApp development, testing, deployment and security review skill pack |
-| [parallelizing-subagent-plans](parallelizing-subagent-plans/SKILL.md)        | Compile approved plans into validated dependency-safe execution schedules                  |
 | [safe-app-icon-forge](safe-app-icon-forge/SKILL.md)                           | App icon design, SVG sanitization, and verified PNG/ICO export                             |
 | [ton-zk-skills](ton-zk-skills/ton-zk-proofs/SKILL.md)                        | TON zero-knowledge circuits, verifier generation, integration, testing, and review        |
 | [web3-universalmutator](web3-universalmutator/README.md)                     | Web3 smart-contract mutation testing with Universal Mutator for TON and EVM projects     |
