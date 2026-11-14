@@ -12,7 +12,7 @@ Use the smallest agent set that creates a real evidence, capability, ownership, 
 
 ### Ownership split with the parallel skills
 
-`codex-worker-orchestrator` selects roles and reconciles their reports. It does not compile dependency topology for an approved numbered plan and does not execute parallel writer lanes. `parallelizing-subagent-plans` owns the topology and verdict; `orchestrating-parallel-worktree-changes-v2` owns validated worktree execution, integration, and its own bounded fix rounds. A child never becomes a recursive subplanner or second controller.
+`codex-worker-orchestrator` selects roles and reconciles their reports. It does not compile dependency topology for an approved numbered plan and does not execute parallel writer lanes. An available equivalent provider must validate source fidelity, dependencies, ownership, conflicts, waves and isolation before the root approves an overlay; `orchestrating-parallel-worktree-changes-v2` owns validated worktree execution, integration, and its own bounded fix rounds. A child never becomes a recursive subplanner or second controller.
 
 ### Report reconciliation
 
@@ -24,7 +24,7 @@ After every report the root persists exactly one current decision: `ACCEPT`, `RE
 
 Direct is a zero-agent execution path, not a third installation profile. For a low/trivial-complexity, low-risk, low-uncertainty task, root works and verifies without preflight or a ledger. Focused documentation/code lookups, including an external page or parameter explanation, stay Direct. A security boundary, runtime investigation, explicitly requested independent review, or useful independent packages prevents the automatic small-task shortcut. A small diff can still be high risk. Do not inflate complexity merely because documentation is external, long, or needs a tool.
 
-Choose delegation once per task from a concrete independent deliverable or a substantial bounded implementation. Optional work requires `delegation.benefit` plus a nonblank `expected_output`; absence means root does the optional work even at moderate complexity. Do not reload the full workflow each turn. `delegated_execution_selected=true` alone, an approved plan, or package labels cannot activate fanout or handoff. With a justified delegation decision, an approved numbered plan can activate execution-compiler handoff; architecture and review routes keep their own stages and never hand off. Explicit independent review and required critic/final/security stages need no optional-work justification.
+Choose delegation once per task from a concrete independent deliverable or a substantial bounded implementation. Optional work requires `delegation.benefit` plus a nonblank `expected_output`; absence means root does the optional work even at moderate complexity. Do not reload the full workflow each turn. `delegated_execution_selected=true` alone, an approved plan, or package labels cannot activate fanout. With a justified delegation decision, independent read/test packets may use native parallel dispatch; writer packets stay sequential. Explicit independent review and required critic/final/security stages need no optional-work justification.
 
 Use `intent=inline` when a larger coherent task is best done by root; required planning evidence still applies. Nontrivial Hard root writes compile a reviewer-only sequential route with `root_work=true` and root write ownership; root implements and verifies before the reviewer wave. Simple safe Direct edits stay zero-child. A missing mandatory reviewer blocks dispatch. A user prohibition always produces zero children; root discloses unmet review prerequisites and cannot claim independent acceptance or begin work depending on an unmet gate.
 
@@ -145,7 +145,7 @@ A second writer requires all of the following:
 4. a validated dependency overlay;
 5. explicit user approval before worktrees are created.
 
-If any item is missing, use sequential writers. Never treat a role declaration as a filesystem lock. `parallelizing-subagent-plans` owns topology and only its `PARALLEL` output may target `orchestrating-parallel-worktree-changes-v2`.
+If any item is missing, use sequential writers. Never treat a role declaration as a filesystem lock. The separate `orchestrating-parallel-worktree-changes-v2` requires an approved, semantically validated `PARALLEL` overlay. Its ledger checks shape/hash/isolation only; without equivalent semantic validation, leave V2 unstarted and work sequentially.
 
 ## 8. SDD role mapping
 

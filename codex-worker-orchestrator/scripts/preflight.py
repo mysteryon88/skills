@@ -19,8 +19,6 @@ from orchestrator_lib import (
 )
 
 PACKAGE_NAME = "codex-worker-orchestrator"
-PARALLEL_COMPANION = "parallelizing-subagent-plans"
-PARALLEL_COMPANION_MAJOR = 2
 VERSION_PATTERN = re.compile(r"^([0-9])$")
 
 RUNTIME_MODEL_STATUS = "unverified; confirm with /model in Codex"
@@ -97,84 +95,6 @@ def trusted_discovery_root(candidate: Path, trust_anchor: Path) -> Path | None:
     if any(is_link_junction_or_reparse(component) for component in components):
         return None
     return root
-
-
-def discover_parallel_companion(project: Path, codex_home: Path) -> dict[str, object]:
-    """Discover the effective project/global compiler with project precedence."""
-
-    project = absolute_lexical(project)
-    codex_home = absolute_lexical(codex_home)
-    user_home = absolute_lexical(Path.home())
-    candidates: list[tuple[str, Path, Path]] = [
-        ("project", project / ".codex" / "skills" / PARALLEL_COMPANION, project),
-        ("project", project / ".agents" / "skills" / PARALLEL_COMPANION, project),
-        ("project", project / PARALLEL_COMPANION, project),
-        ("global", codex_home / "skills" / PARALLEL_COMPANION, codex_home),
-        (
-            "global",
-            user_home / ".codex" / "skills" / PARALLEL_COMPANION,
-            user_home,
-        ),
-        (
-            "global",
-            user_home / ".agents" / "skills" / PARALLEL_COMPANION,
-            user_home,
-        ),
-    ]
-    seen: set[Path] = set()
-    for scope, candidate, trust_anchor in candidates:
-        trusted = trusted_discovery_root(candidate, trust_anchor)
-        if trusted is None or trusted in seen:
-            continue
-        seen.add(trusted)
-        skill_file = trusted / "SKILL.md"
-        version_path = trusted / "VERSION"
-        if (
-            is_link_junction_or_reparse(skill_file)
-            or is_link_junction_or_reparse(version_path)
-            or not skill_file.is_file()
-        ):
-            continue
-        detected_name = skill_frontmatter_name(skill_file)
-        try:
-            version = version_path.read_text(encoding="utf-8").strip()
-        except OSError:
-            version = None
-        version_match = VERSION_PATTERN.fullmatch(version or "")
-        compatible = (
-            detected_name == PARALLEL_COMPANION
-            and version_match is not None
-            and int(version_match.group(1)) == PARALLEL_COMPANION_MAJOR
-        )
-        if detected_name != PARALLEL_COMPANION:
-            reason = f"frontmatter name is {detected_name!r}"
-        elif version_match is None:
-            reason = "VERSION is missing or invalid"
-        elif not compatible:
-            reason = (
-                f"version {version} is incompatible; required major is "
-                f"{PARALLEL_COMPANION_MAJOR}"
-            )
-        else:
-            reason = "compatible project/global companion discovered"
-        return {
-            "name": PARALLEL_COMPANION,
-            "found": True,
-            "compatible": compatible,
-            "scope": scope,
-            "path": str(trusted),
-            "version": version,
-            "reason": reason,
-        }
-    return {
-        "name": PARALLEL_COMPANION,
-        "found": False,
-        "compatible": False,
-        "scope": None,
-        "path": None,
-        "version": None,
-        "reason": "not found in project or global skill roots",
-    }
 
 
 def _skill_files(root: Path, *, recursive: bool) -> list[Path]:
@@ -357,7 +277,7 @@ def main() -> int:
         "--project",
         type=Path,
         default=Path.cwd(),
-        help="Project root used for project-before-global companion discovery.",
+        help="Project root used for trusted local skill discovery.",
     )
     parser.add_argument(
         "--skill",
@@ -642,28 +562,13 @@ def main() -> int:
     configured_approval_policy = config.get("approval_policy") if isinstance(config, dict) else None
     configured_sandbox_mode = config.get("sandbox_mode") if isinstance(config, dict) else None
 
-    parallel_companion = discover_parallel_companion(project, home_input)
     discovered_skill_names = discover_skill_inventory(
         project,
         home_input,
         skill_path,
         include_default_globals=True,
     )
-    if parallel_companion["found"] and PARALLEL_COMPANION not in discovered_skill_names:
-        discovered_skill_names.append(PARALLEL_COMPANION)
-        discovered_skill_names.sort()
-    skill_inventory = {
-        "names": discovered_skill_names,
-        "incompatible": (
-            [PARALLEL_COMPANION]
-            if parallel_companion["found"] and not parallel_companion["compatible"]
-            else []
-        ),
-    }
-    if parallel_companion["found"] and not parallel_companion["compatible"]:
-        warnings.append(
-            f"Parallel companion is incompatible: {parallel_companion['reason']}"
-        )
+    skill_inventory = {"names": discovered_skill_names, "incompatible": []}
 
     codex_executable: str | None = None
     codex_version: str | None = None
@@ -724,7 +629,6 @@ def main() -> int:
         "max_threads": max_threads,
         "configured_approval_policy": configured_approval_policy,
         "configured_sandbox_mode": configured_sandbox_mode,
-        "parallel_companion": parallel_companion,
         "skill_inventory": skill_inventory,
         "roles": roles,
         "errors": errors,
@@ -761,17 +665,6 @@ def main() -> int:
             "Configured permissions: "
             f"approval_policy={configured_approval_policy or 'default'}, "
             f"sandbox_mode={configured_sandbox_mode or 'default'}"
-        )
-        companion_state = (
-            "compatible"
-            if parallel_companion["compatible"]
-            else "incompatible"
-            if parallel_companion["found"]
-            else "absent"
-        )
-        print(
-            f"Parallel companion: {companion_state} "
-            f"({parallel_companion['path'] or parallel_companion['reason']})"
         )
         print("Custom agents:")
         for role in roles:

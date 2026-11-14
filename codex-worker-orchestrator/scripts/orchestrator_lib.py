@@ -109,6 +109,7 @@ RUNTIME_EXCLUDED_PARTS = {
     ".backups",
     "backups",
     "htmlcov",
+    "evals",
     "tests",
     ".venv",
     "venv",

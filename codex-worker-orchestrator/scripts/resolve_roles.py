@@ -52,7 +52,6 @@ REVIEW_INTENTS = {
     "final-review", "security-review",
 }
 WRITER_MUTATIONS = {"write", "documentation-only"}
-PARALLEL_COMPANION = "parallelizing-subagent-plans"
 
 
 class ResolutionInputError(ValueError):
@@ -815,19 +814,6 @@ def resolve_request(
         elif request.get("delegation"):
             force_inline = False
 
-    companion_applicable = (
-        request["approved_numbered_plan"]
-        and request["delegated_execution_selected"]
-        and intent not in REVIEW_INTENTS | {"architecture"}
-        and not request["user_forbids_subagents"]
-        and not force_inline
-        and not root_execution
-        and bool(request.get("delegation"))
-    )
-    companion_discovered = PARALLEL_COMPANION in skills
-    companion_compatible = (
-        companion_discovered and PARALLEL_COMPANION not in incompatible_skills
-    )
     native_applicable = (
         len(packages) > 1
         and intent in NATIVE_PARALLEL_INTENTS
@@ -835,7 +821,6 @@ def resolve_request(
         and not force_inline
         and not root_execution
         and bool(request.get("delegation"))
-        and (not companion_applicable or not companion_discovered)
     )
     native_parallel = native_applicable and not (intent == "test-execution" and shared_test_resources)
 
@@ -1027,15 +1012,7 @@ def resolve_request(
             + ", ".join(shared_test_resources)
             + "); execute them sequentially."
         )
-    if companion_applicable and companion_discovered and not companion_compatible:
-        blocked_reasons.append(
-            f"Installed companion {PARALLEL_COMPANION} is incompatible; repair or remove it before this handoff."
-        )
-    elif companion_applicable and companion_compatible:
-        warnings.append(
-            f"Delegate dependency topology to {PARALLEL_COMPANION}; it alone may emit the V2 executor overlay."
-        )
-    elif native_parallel:
+    if native_parallel:
         warnings.append(
             "Use conservative native parallel dispatch only for independent read/test packets."
         )
@@ -1044,7 +1021,7 @@ def resolve_request(
             pass
         else:
             warnings.append(
-                "Parallel writer dispatch requires a compatible plan compiler, validated worktree overlay, and user-approved worktrees; use sequential dispatch."
+                "Parallel writer dispatch requires an approved, semantically validated worktree overlay and user-approved worktrees in the separate V2 executor; use sequential dispatch."
             )
 
     if missing_capabilities:
@@ -1162,9 +1139,6 @@ def resolve_request(
         mode = "blocked"
     elif inline_condition:
         mode = "inline"
-    elif companion_applicable and companion_compatible:
-        mode = "handoff"
-        parallel_strategy = "companion"
     elif native_parallel:
         mode = "parallel"
         parallel_strategy = "native"
@@ -1242,11 +1216,6 @@ def resolve_request(
                         "task_ids": [instance["task_id"]],
                     }
                 )
-    if mode == "handoff":
-        approval_gates.append(
-            f"Read and follow {PARALLEL_COMPANION}; its PARALLEL overlay may target only orchestrating-parallel-worktree-changes-v2."
-        )
-
     route: dict[str, Any] = {
         "workflow_owner": str(policy["workflow"]["root_owner"]),
         "root_work": mode == "inline" or (mode == "sequential" and (

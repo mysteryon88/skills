@@ -40,7 +40,7 @@ A substantive artifact introduces or resolves nontrivial choices about behavior,
 
 Use `architecture` with `phase=requirements` or `design` to produce a substantive specification, `spec-review` to check it, and `plan-review` to check the implementation plan. Every substantive `phase=planning` request, including architecture/inline plan inputs, needs accepted specification evidence; `spec-review` remains available to obtain that first critique. Sol/Astra root keeps architectural authorship; a separate architect requires a justified distinct deliverable. A read-only `skeptic` checks the artifact. Each packet names the current stage; an architect cannot draft both artifacts ahead of the review boundary and cannot independently review its own work.
 
-Architecture and review routes never hand off to the execution-plan compiler, even when a numbered plan is approved and delegation selected. An incompatible compiler does not block these independent review stages; actual execution handoffs retain their compatibility gate.
+Architecture and review routes retain their own independent stages, even when a numbered plan is approved and delegation selected.
 
 The ordered gate is:
 
@@ -93,8 +93,8 @@ Announce every new child, including explorers, background test workers, implemen
 - Children do not invoke `codex-worker-orchestrator`, spawn helpers, create reviewers, or act as recursive subplanners.
 - Prefer brief files and workspace-write implementer report files over pasting large requirements into the controller context. Read-only results stay in the child final response.
 - One writer owns one write surface. Parallel writers require non-overlapping ownership and isolated mutable resources. Ask the user before creating separate worktrees; without explicit approval, keep writer packets sequential.
-- For an applicable approved-plan handoff, `parallelizing-subagent-plans` owns dependency topology and only `orchestrating-parallel-worktree-changes-v2` executes its `PARALLEL` overlay. Do not copy either protocol into a child brief.
-- When that companion is absent, a conservative native fallback may fan out only independent read-only or `test-execution` packets. Give each instance a unique task identifier and collect every result.
+- The separate `orchestrating-parallel-worktree-changes-v2` executes only an approved, semantically validated `PARALLEL` overlay. Its ledger checks shape/hash/isolation, not source fidelity, dependencies, ownership, conflicts or waves. Without equivalent semantic validation, leave V2 unstarted and work sequentially; do not copy its protocol into a child brief.
+- Conservative native parallel dispatch may fan out only independent read-only or `test-execution` packets. Writer packets stay sequential. Give each instance a unique task identifier and collect every result.
 
 ### Background test runner
 
