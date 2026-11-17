@@ -1,7 +1,7 @@
 interface:
   display_name: "Codex Worker Orchestrator"
   short_description: "Routes work through bounded Codex roles"
-  default_prompt: "Use $codex-worker-orchestrator for useful bounded delegation: Terra 6.1 for exploration, research, ordinary bounded implementation, UI evidence and technical writing; Luna for deep-fixed work and focused tests; Sol 6.1 for high-rigor implementation and review. Keep simple work in root; independently critique substantive specs then plans, and reserve Astra for extreme questions unresolved after Sol analysis."
+  default_prompt: "Use $codex-worker-orchestrator for bounded delegation. Use Sol 6.2 for Hard coding and independent review, Terra 6.1 for research, visual evidence and technical writing, and Luna for Lite, deep-fixed work and focused tests. Keep simple tasks in root. Independently critique substantive specs and plans in order. Reserve Astra 6.2 for extreme questions unresolved after Sol analysis."
 policy:
   products: [CODEX]
   allow_implicit_invocation: true

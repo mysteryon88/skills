@@ -768,7 +768,10 @@ def record_report(project_root: str | os.PathLike[str], run_id: str, report: Map
         # Identity is recorder evidence, never a worker assertion.
         metadata.pop("filesystem_identity", None)
         try:
-            identity = artifact_identity(artifact_path(Path(project_root).resolve(strict=True), metadata["path"]))
+            root = Path(project_root).resolve(strict=True)
+            artifact = artifact_path(root, metadata["path"])
+            identity = artifact_identity(artifact)
+            metadata["path"] = artifact.relative_to(root).as_posix()
         except (OSError, ValueError):
             identity = None  # Resolver still refuses unsafe or ambiguous paths.
         if identity is not None:

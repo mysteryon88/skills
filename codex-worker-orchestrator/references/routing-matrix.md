@@ -64,8 +64,7 @@ Declared file-changing diagnostics count toward the same Lite high-rigor prohibi
 | Review a substantive specification/design, then its implementation plan | `skeptic` | `spec-review` before planning, `plan-review` before implementation; root resolves material findings. Reuse accepted unchanged review, never the author's own review. |
 | Attack assumptions and claimed readiness | `skeptic` | Returns gates or replan advice, never user approval or final code acceptance. |
 | Implement deep/fixed work against fixed interfaces or author focused tests | `luna_worker` | Luna 6/max; high complexity alone can stay Luna for deep-fixed work, high uncertainty or high/critical risk selects Sol. High-rigor test-authoring selects Sol. Mandatory `sol_reviewer` after the Hard write. |
-| Implement high-rigor quick/bounded work, uncertain/risky fixed work, or a confirmed connected multi-file fix | `sol_worker` | Sol 6.1/high; no downward fallback. Mandatory `sol_reviewer` after the Hard write. |
-| Ordinary quick/bounded implementation, including scoped UI/code fixes | `terra_worker` | Terra 6.1/xhigh below high rigor; visual inputs are optional. |
+| Implement quick/bounded code or UI changes, uncertain/risky fixed work, or a confirmed connected multi-file fix | `sol_worker` | GPT-6.2 Sol/high. Require independent Sol/xhigh review. A missing Sol worker blocks this coding route. |
 | Source-grounded technical draft/revision in assigned files | `terra_worker` | content-writing for the requested software task; high rigor selects sol_worker. Established technical documentation stays docs_writer. |
 | Inspect application screenshots, UI states or rendered technical pages | `terra_analyst` | visual-analysis, read-only Terra/high; high rigor selects sol_architect on the same evidence question. |
 | Run builds or long/noisy/parallelizable checks | `luna_test_runner` | Root collects before dependent work; failures return to powerful root or Sol diagnosis. |
@@ -74,7 +73,7 @@ Declared file-changing diagnostics count toward the same Lite high-rigor prohibi
 | Change only established documentation | `docs_writer` | Mandatory `sol_reviewer` after the delegated Hard write; simple edits stay Direct. |
 | Resolve an extreme-complexity question still unresolved after Sol analysis | `astra_advisor` | Last-resort Astra/xhigh, read-only, gated by the escalation conditions below. |
 
-### Terra and Luna examples (v3)
+### Routing examples
 
 These are local routing defaults, not measured quality or subscription-cost guarantees.
 
@@ -82,20 +81,20 @@ These are local routing defaults, not measured quality or subscription-cost guar
 |---|---|
 | Explain one screenshot or find a docs parameter | Direct; loading a model or skill is not a delegation reason. |
 | Compare application screenshots before/after a UI change | `visual-analysis` -> `terra_analyst`; cite file/page/region and unreadable areas. |
-| Fix a scoped responsive-layout defect | quick/bounded with `visual_or_browser=true` -> Terra, unless high rigor requires Sol. Check rendered result and relevant regression. |
+| Fix a scoped responsive-layout defect | `quick-implementation` or `bounded-implementation` with `visual_or_browser=true` selects `sol_worker`. Check the rendered result and the relevant regression. |
 | Draft technical documentation or a project report from supplied facts | `content-writing` -> Terra; verify facts, qualifications, audience and saved artifact. Simple rewrites stay Direct. |
 | Update known API names in existing docs | `documentation` -> Luna `docs_writer` when delegation is useful. |
 | Triage a coherent log batch or extract facts into a schema | Terra/low evidence role; return IDs, locations, unknown values and processed counts. No child per record. |
-| Implement a fixed mapper/adapter or fixtures as ordinary bounded work | Terra worker/xhigh; explicit deep-fixed implementation and focused test authoring keep Luna/max. High-rigor test-authoring selects Sol. |
+| Implement a mapper or adapter as ordinary bounded work | `sol_worker` on Sol/high. Explicit deep-fixed implementation and focused test authoring use Luna/max under the conditions above. |
 | Run builds or noisy regression suites | Luna runner/medium; return errors/full-log path, no fixes or retries. |
 
-Ordinary Hard quick/bounded work defaults to Terra/xhigh. High rigor takes priority over modality and selects Sol. Deep-fixed work stays Luna for high complexity alone, but not high uncertainty or high/critical risk. Lite keeps ordinary bounded Luna routing; new specialist intents require Hard, with safe root work available when appropriate. After two unsuccessful Terra implementation/fix attempts against one cause, return the attempts and evidence to root for the existing diagnostic reset.
+Lite routes ordinary bounded work to Luna. In Hard, high uncertainty or high/critical risk moves deep-fixed work to Sol. Specialist intents require Hard, with safe root work available when appropriate. After two failed fixes for the same cause, return the attempts and evidence to root for diagnosis.
 
-Terra routes serve the user's software tasks: code, UI, technical text and relevant screenshots. Do not expand them into CAD/AutoCAD, engineering drawings, unrelated office/design automation or generic creative writing based on model capabilities.
+Terra routes cover repository research, technical writing and read-only analysis of software visuals. Keep them within the supplied software task and accessible evidence.
 
 Require actual accessible screenshots and child image tools, never infer details from filenames. `visual-analysis` itself does not require browser access. UI verification requires actual tools and authorized target actions before dispatch; model/skill names do not establish access. Inspect the rendered result to verify UI changes.
 
-Official sources checked 2026-10-28: [Terra model](https://developers.openai.com/api/docs/models/gpt-6.1-terra), [model selection](https://developers.openai.com/api/docs/guides/model-selection). Terra supports text/image input, visual interpretation, scoped fixes, writing and computer use where tools are available. This skill chooses low for exploration/research, xhigh for scoped execution and high for visual evidence. API tool calling requires Responses; this skill uses native Codex dispatch and configures no API endpoints. API support does not establish child tool access or account quotas. Luna/max and Sol review efforts remain local policy. Do not infer pricing, CLI version floors or Ultra delegation semantics from third-party summaries.
+Official sources checked 2026-10-28: [Terra model](https://developers.openai.com/api/docs/models/gpt-6.1-terra), [model selection](https://developers.openai.com/api/docs/guides/model-selection). This skill assigns Terra/low to exploration and research, Terra/xhigh to technical writing, and Terra/high to visual evidence. It uses native Codex dispatch. Check the actual child tool catalog and account capabilities before dispatch.
 
 ## 5. Skeptic triggers
 
@@ -167,7 +166,7 @@ A Lite installation includes both roles; only a selected role is required by its
 
 ## Astra escalation
 
-Normal work uses GPT-6 Luna, GPT-6.1 Terra and GPT-6.1 Sol. Astra is reserved for the hardest questions after Sol analysis and a decisive evidence check have not resolved them. Use `intent=deep-analysis`, read mutation, `complexity=extreme`, and one recorded `escalation_reason`:
+Use GPT-6.2 Astra for a bounded advisory question that remains unresolved after Sol analysis and a decisive evidence check. Use `intent=deep-analysis`, read mutation, `complexity=extreme`, and one recorded `escalation_reason`:
 
 - `conflicting-evidence`: a material conflict remains after root compared raw evidence and sought a decisive check;
 - `failed-specialist-analysis`: a completed specialist investigation did not resolve the question; include what failed and the new hypothesis to test;
@@ -175,7 +174,7 @@ Normal work uses GPT-6 Luna, GPT-6.1 Terra and GPT-6.1 Sol. Astra is reserved fo
 
 An evidence conflict or failed specialist alone does not permit Astra: the resolver blocks every non-extreme request. Ordinary disagreement first goes to Sol root or `skeptic`; a routine failing test goes to diagnosis. Do not classify work as extreme simply because it is large. `astra_advisor` is one advisory pass, including when root itself is Astra. Supply previous Sol analysis, the decisive evidence check, raw evidence, competing hypotheses, and one acceptance question without prescribing the answer. It neither replaces `sol_reviewer`/`security_reviewer` nor authorizes a writer. A repeat needs new evidence or a new hypothesis; no automatic advisor loop.
 
-These are policy choices, not benchmark-derived cost or quality guarantees. Verify actual model/effort availability before dispatch; `cost_rank` is a routing preference, not token pricing. See [Astra guidance](https://developers.openai.com/api/docs/guides/latest-model).
+OpenAI recommends GPT-6.2 Sol for everyday coding and Astra for demanding cross-service work. Sol retains the standard GPT-6.1 Sol API token prices and can complete more tasks on the same paid Codex plan. End-to-end latency depends on the task and reasoning effort. Preserve the user’s speed setting. Fast and Ultrafast consume more allowance. Check model and effort availability before dispatch. `cost_rank` expresses a routing preference. [GPT-6.2 release](https://learn.chatgpt.com/docs/whats-new/gpt-62-astra-sol) · [API pricing](https://developers.openai.com/api/docs/pricing) · [Codex speed modes](https://learn.chatgpt.com/docs/agent-configuration/speed)
 
 ## 10. End-to-end workflows
 

@@ -428,7 +428,16 @@ def artifact_path(root: Path, value: str) -> Path:
         raise ValueError("artifact path cannot contain a stream or null byte")
     artifact = root
     for part in path.split("/"):
-        artifact = artifact / part
+        requested = artifact / part
+        # DrvFS resolve() can preserve the caller's case after an atomic save.
+        # Use the actual entry name. Two hardlinks can have the same inode.
+        matches = [name for name in os.listdir(artifact) if name.casefold() == part.casefold()]
+        if part not in matches:
+            requested_stat = requested.lstat()
+            if len(matches) != 1 or not os.path.samestat(requested_stat, (artifact / matches[0]).lstat()):
+                raise ValueError("ambiguous artifact path spelling")
+            requested = artifact / matches[0]
+        artifact = requested
         if is_link_junction_or_reparse(artifact):
             raise ValueError("artifact path contains a link, junction, or reparse point")
     artifact = artifact.resolve(strict=True)

@@ -31,7 +31,7 @@ Reclassify on scope/evidence/risk/failure changes; length or approval alone neve
 - **Lite:** `luna_worker` implements a detailed settled recipe; root inspects the diff and runs short quiet checks. `luna_test_runner` handles builds, noisy checks, and worthwhile long/independent checks. Include steps, files, interfaces, dependencies, acceptance, checks, and stops. High-rigor/integration writes require Hard.
 - **Hard:** every nontrivial file-changing route, including root-written work, requires independent `sol_reviewer` on Sol/xhigh without weaker fallback; security-sensitive work also requires `security_reviewer`. Safe Direct edits remain zero-child.
 
-Terra 6.1/low handles exploration/research; Terra/xhigh ordinary Hard quick/bounded and UI/code/content implementation; Terra/high read-only visuals. Luna/max handles fixed/deep implementation, focused tests and established documentation. Sol 6.1 owns high-rigor implementation, architecture, diagnosis and review. High uncertainty/risk, not volume, requires Sol.
+In Hard, `sol_worker` (GPT-6.2 Sol/high) handles coding and UI fixes. Sol covers architecture, diagnosis, review and risky or uncertain deep-fixed work. Terra 6.1 handles research/exploration (low), technical drafts (xhigh) and visuals (high). Luna/max handles fixed implementation, focused tests and established documentation.
 
 Execution-only builds/tests use Luna/medium; build/noise overrides short duration. Return failures to Sol/Astra root or Sol specialists with compact evidence. No autonomous fixes/retries; reuse the runner after fixes.
 
@@ -51,7 +51,7 @@ Native parallel dispatch covers only independent read/test packets; writer packe
 
 ## Reconcile and finish
 
-Use `run_state.py` for multi-agent, high-risk, or resumable work; reconcile reports as `ACCEPT`, `REPAIR`, `INVESTIGATE`, `REPLAN`, or `BLOCK`. Preserve follow-up scope. Two failed writer attempts against one cause require systematic debugging; Terra returns attempts/evidence to root and stops. Lite needs authorized Hard escalation or `BLOCK`.
+Use `run_state.py` for multi-agent, high-risk, or resumable work; reconcile reports as `ACCEPT`, `REPAIR`, `INVESTIGATE`, `REPLAN`, or `BLOCK`. Preserve follow-up scope. After two failed fixes against the same cause, the worker returns both attempts and evidence to root for diagnosis. Lite needs authorized Hard escalation or `BLOCK`.
 
 Record implementation/repair transitions before changes, invalidating verification. Completion requires diff inspection, verification and selected final/security reviews after the latest recorded change, resolved findings and accepted reports. Use `superpowers:verification-before-completion`.
 

@@ -436,9 +436,13 @@ def validate_install_profiles(
         "luna_worker": ("gpt-6-luna", "max", "workspace-write"),
         "terra_worker": ("gpt-6.1-terra", "xhigh", "workspace-write"),
         "luna_test_runner": ("gpt-6-luna", "medium", "workspace-write"),
-        "skeptic": ("gpt-6.1-sol", "high", "read-only"),
-        "sol_reviewer": ("gpt-6.1-sol", "xhigh", "read-only"),
-        "astra_advisor": ("gpt-6-astra", "xhigh", "read-only"),
+        "runtime_investigator": ("gpt-6.2-sol", "high", "workspace-write"),
+        "sol_architect": ("gpt-6.2-sol", "xhigh", "read-only"),
+        "skeptic": ("gpt-6.2-sol", "high", "read-only"),
+        "sol_worker": ("gpt-6.2-sol", "high", "workspace-write"),
+        "sol_reviewer": ("gpt-6.2-sol", "xhigh", "read-only"),
+        "security_reviewer": ("gpt-6.2-sol", "xhigh", "read-only"),
+        "astra_advisor": ("gpt-6.2-astra", "xhigh", "read-only"),
     }
     for name, (model, effort, sandbox) in required.items():
         spec = role_registry.get(name)

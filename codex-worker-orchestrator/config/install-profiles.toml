@@ -9,7 +9,7 @@ default_max_threads = 2
 
 [[profiles]]
 name = "hard"
-description = "Luna for fixed work, Terra for visual and scoped tasks, Sol for complex work/review; Astra only for extreme unresolved analysis."
+description = "Sol 6.2 for coding and review, Terra for evidence and technical writing, Luna for fixed work and tests, Astra 6.2 for extreme unresolved analysis."
 roles = [
   "repo_explorer", "docs_researcher", "runtime_investigator", "sol_architect",
   "skeptic", "luna_worker", "terra_worker", "sol_worker", "terra_analyst", "luna_test_runner",

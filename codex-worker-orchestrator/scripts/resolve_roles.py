@@ -404,7 +404,7 @@ def _high_rigor(request: Mapping[str, Any]) -> bool:
 
 def _root_owns_architecture(request: Mapping[str, Any]) -> bool:
     return (
-        request.get("root_model") in {"gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol", "gpt-5.6-sol"}
+        request.get("root_model") in {"gpt-6.2-astra", "gpt-6.2-sol", "gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol", "gpt-5.6-sol"}
         and not request.get("independent_analysis_required", False)
     )
 
@@ -458,18 +458,16 @@ def _cheapest_registered_role(
 def _primary_model(request: Mapping[str, Any], install_mode: str) -> str | None:
     intent = request["intent"]
     if intent in {"quick-implementation", "bounded-implementation"}:
-        if _high_rigor(request):
-            return "gpt-6.1-sol"
-        if install_mode == "hard":
-            return "gpt-6.1-terra"
+        if install_mode == "hard" or _high_rigor(request):
+            return "gpt-6.2-sol"
     if intent == "deep-fixed-implementation" and (
         request["uncertainty"] == "high" or request["risk"] in {"high", "critical"}
     ):
-        return "gpt-6.1-sol"
+        return "gpt-6.2-sol"
     if intent in {"visual-analysis", "content-writing", "test-authoring"} and _high_rigor(request):
-        return "gpt-6.1-sol"
+        return "gpt-6.2-sol"
     if intent == "integration-debugging" and request["confirmed_root_cause"]:
-        return "gpt-6.1-sol"
+        return "gpt-6.2-sol"
     return None
 
 
@@ -525,6 +523,7 @@ def _accepted_artifact(
         digest = hashlib.file_digest(handle, "sha256").hexdigest()
     state = show_run(root, reference["review_run_id"])
     candidates = []
+    ambiguous_ids = set()
     referenced_index = next((index for index, report in enumerate(state["reports"])
                              if report.get("report_id", report["task_id"]) == reference["review_report_id"]), -1)
     for index, report in enumerate(state["reports"]):
@@ -535,8 +534,11 @@ def _accepted_artifact(
         report_identity = metadata.get("filesystem_identity")
         try:
             report_artifact = artifact_path(root, report_path)
-            report_path = report_artifact.relative_to(root).as_posix()
-            if report_identity is None:
+            if report_path != path and report_artifact.relative_to(root).as_posix() == path:
+                # A legacy spelling may have named a distinct historical entry.
+                if index >= referenced_index:
+                    ambiguous_ids.add(report_identity)
+            elif report_identity is None:
                 report_identity = artifact_identity(report_artifact)
         except FileNotFoundError:
             if report_identity is None and index > referenced_index and report_path != path:
@@ -547,6 +549,8 @@ def _accepted_artifact(
     # Preserve target history without merging later files occupying an alias.
     identities.update(report_identity for _, report_path, report_identity in candidates
                       if report_path == path and report_identity is not None)
+    if ambiguous_ids - identities:
+        raise ValueError("ambiguous historical artifact spelling; obtain a fresh review")
     matching = [report for report, report_path, report_identity in candidates
                 if report_path == path or report_identity in identities]
     if not matching or matching[-1].get("report_id", matching[-1]["task_id"]) != reference["review_report_id"]:
@@ -681,7 +685,7 @@ def _workflow_gates(
             )
         else:
             quality.append(
-                "Mandatory sol_reviewer / gpt-6.1-sol / xhigh review must accept the final integrated diff; no weaker fallback is allowed."
+                "Mandatory sol_reviewer / gpt-6.2-sol / xhigh review must accept the final integrated diff; no weaker fallback is allowed."
             )
         quality.append(
             "Use only write isolation supplied by the selected owner workflow; a route declaration is not a filesystem lock or worktree proof."
@@ -902,7 +906,7 @@ def resolve_request(
                         rejected_reasons.setdefault(candidate, "Fallback does not support the requested intent.")
                         continue
                     if _is_writer(registry[required]) or selection_intent == "visual-analysis":
-                        tiers = {"gpt-6-luna": 1, "gpt-6.1-terra": 2, "gpt-6.1-sol": 3, "gpt-6-astra": 4}
+                        tiers = {"gpt-6-luna": 1, "gpt-6.1-terra": 2, "gpt-6.2-sol": 3, "gpt-6.2-astra": 4}
                         if tiers.get(registry[candidate].model, 0) < tiers.get(registry[required].model, 0):
                             rejected_reasons.setdefault(candidate, "Required model tier cannot fall back to a lower tier.")
                             continue

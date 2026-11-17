@@ -1,7 +1,7 @@
 # managed-by: codex-worker-orchestrator
 name = "astra_advisor"
 description = "Last-resort read-only advice for extreme-complexity questions unresolved by Sol analysis."
-model = "gpt-6-astra"
+model = "gpt-6.2-astra"
 model_reasoning_effort = "xhigh"
 model_reasoning_summary = "concise"
 model_verbosity = "low"

@@ -1,7 +1,7 @@
 # managed-by: codex-worker-orchestrator
 name = "runtime_investigator"
 description = "Runtime reproduction and diagnostics without implementing fixes."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 model_reasoning_summary = "concise"
 model_verbosity = "low"
