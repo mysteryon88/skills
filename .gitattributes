@@ -1,0 +1,16 @@
+# Keep canonical text bytes stable across Linux and Windows checkouts.
+* text=auto eol=lf
+
+# Never apply text normalization to release and visual assets.
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.pdf binary
+*.png binary
+*.webp binary
+*.zip binary
+
+# Native command scripts retain the line ending expected by Windows shells.
+*.bat text eol=crlf
+*.cmd text eol=crlf
