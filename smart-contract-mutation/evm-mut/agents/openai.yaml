@@ -1,0 +1,4 @@
+interface:
+  display_name: "EVM mutation"
+  short_description: "Calibrate and run Solidity mutation engines"
+  default_prompt: "Use $evm-mut to execute the selected EVM mutation lane and preserve all outcomes."
