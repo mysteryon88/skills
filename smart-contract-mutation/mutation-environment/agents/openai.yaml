@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mutation environment"
+  short_description: "Prepare isolated compilers, runners and tool environments"
+  default_prompt: "Use $mutation-environment to prepare this campaign's project-local tool environment."
