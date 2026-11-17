@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mutation project scout"
+  short_description: "Discover test scope and evidence-backed tool routes"
+  default_prompt: "Use $mutation-project-scout to inventory this project and propose mutation scope."
