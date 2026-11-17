@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mutation verifier"
+  short_description: "Independently check current campaign evidence and conclusions"
+  default_prompt: "Use $mutation-verifier to verify this campaign's exact current evidence bundle."
