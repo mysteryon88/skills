@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finding Walkthrough"
+  short_description: "Explain one finding with paired Russian and English reports"
+  default_prompt: "Use $finding-walkthrough to explain this finding from evidence as one schema-2 JSON and full paired Russian/English reports using the mandatory templates, with classified claims, a sequence diagram and explicit gaps."

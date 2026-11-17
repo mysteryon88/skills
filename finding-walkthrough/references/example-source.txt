@@ -1,0 +1,3 @@
+def receive(payload):
+    amount = int(payload["amount"])
+    return {"accepted": amount}

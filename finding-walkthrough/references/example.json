@@ -1,0 +1,512 @@
+{
+  "schema_version": 2,
+  "template_version": "2",
+  "trace": {
+    "schema_version": 1,
+    "finding": {
+      "id": "demo",
+      "title": "Conversion precedes result construction",
+      "summary": "Illustrative source-only path through a simple handler; no execution or incident is claimed."
+    },
+    "context": {
+      "repository": "included illustrative source",
+      "revision": "SHA-256-bound source bytes",
+      "environment": "source inspection only; no execution",
+      "reproduction_status": "not-run"
+    },
+    "prerequisites": [
+      {
+        "id": "setup",
+        "description": "Proposed setup.",
+        "status": "hypothetical",
+        "evidence_ids": [],
+        "gap_ids": [
+          "missing"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "id": "actor",
+        "name": "Actor",
+        "kind": "actor"
+      },
+      {
+        "id": "handler",
+        "name": "Handler",
+        "kind": "function"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "src",
+        "kind": "source",
+        "path": "/illustrative/example-source.txt",
+        "sha256": "240be41063530146a941aa229e9e0397302ce7b59705abb82cf3d9307190fc15",
+        "description": "Included illustrative handler source; rebind this path before using the example."
+      }
+    ],
+    "steps": [
+      {
+        "id": "trigger",
+        "title": "Handler converts the input amount",
+        "from": "actor",
+        "to": "handler",
+        "kind": "call",
+        "status": "source-supported",
+        "input": {
+          "format": "python",
+          "value": "receive({\"amount\": \"invalid\"})"
+        },
+        "operation": "Reads amount and converts it before constructing the result. Malformed-input runtime behavior is not observed.",
+        "checks": [],
+        "state_before": "Proposed input contains a nonnumeric string.",
+        "state_after": "Conditional source behavior; runtime exception and caller handling are unmeasured.",
+        "output": "No observed output; result construction follows conversion.",
+        "next": null,
+        "sources": [
+          {
+            "path": "/illustrative/example-source.txt",
+            "symbol": "receive",
+            "start_line": 1,
+            "end_line": 3,
+            "language": "python",
+            "code": "def receive(payload):\n    amount = int(payload[\"amount\"])\n    return {\"accepted\": amount}\n",
+            "evidence_id": "src"
+          }
+        ],
+        "evidence_ids": [
+          "src"
+        ],
+        "gap_ids": []
+      }
+    ],
+    "outcome": {
+      "summary": "Source converts the amount before constructing a result.",
+      "status": "source-supported",
+      "evidence_ids": [
+        "src"
+      ],
+      "gap_ids": [],
+      "verification": "Inspect the included handler and establish runtime/caller behavior separately."
+    },
+    "gaps": [
+      {
+        "id": "missing",
+        "description": "No runtime execution or caller implementation is available.",
+        "needed": "Authorized isolated runtime and actual caller.",
+        "verification": "Inspect caller handling; when authorized, compare malformed and valid input.",
+        "impact": "Practical failure handling and user impact remain unestablished."
+      }
+    ],
+    "author": "example-author"
+  },
+  "content": {
+    "title": {
+      "ru": "Преобразование предшествует созданию результата",
+      "en": "Conversion precedes result construction"
+    },
+    "opening": {
+      "story": {
+        "text": {
+          "ru": "Обработчик читает amount и вызывает int до создания ответа. Пример показывает порядок в исходном коде; выполнение и реальный инцидент не заявляются.",
+          "en": "The handler reads amount and calls int before constructing its response. This example demonstrates source order; it claims neither execution nor a real incident."
+        },
+        "status": "source-supported",
+        "evidence_ids": [
+          "src"
+        ],
+        "gap_ids": []
+      },
+      "severity": {
+        "level": "undetermined",
+        "reason": {
+          "ru": "Обработка вызывающей стороной, поведение среды и практический эффект не установлены.",
+          "en": "Caller handling, runtime behavior and practical impact have not been established."
+        }
+      },
+      "conditions": {
+        "text": {
+          "ru": "Предложен вызов с нечисловой строкой; фактический вызывающий код отсутствует.",
+          "en": "A call with a nonnumeric string is proposed; the actual caller is unavailable."
+        },
+        "status": "hypothetical",
+        "evidence_ids": [],
+        "gap_ids": [
+          "missing"
+        ]
+      },
+      "scope": {
+        "text": {
+          "ru": "Без вызывающего кода и выполнения нельзя установить пользовательский эффект или восстановление после ошибки.",
+          "en": "Without the caller and execution, user impact and failure recovery cannot be established."
+        },
+        "status": "unknown",
+        "evidence_ids": [],
+        "gap_ids": [
+          "missing"
+        ]
+      }
+    },
+    "comparison": [
+      {
+        "stage": {
+          "ru": "Преобразовать вход",
+          "en": "Convert input"
+        },
+        "normal": {
+          "text": {
+            "ru": "При корректном входе код преобразует amount перед созданием ответа; успешное выполнение здесь не измерено.",
+            "en": "For valid input, the code converts amount before constructing a response; successful execution is not measured here."
+          },
+          "status": "source-supported",
+          "evidence_ids": [
+            "src"
+          ],
+          "gap_ids": []
+        },
+        "finding": {
+          "text": {
+            "ru": "Для предложенной нечисловой строки нужно отдельно проверить исключение и реакцию вызывающей стороны.",
+            "en": "For the proposed nonnumeric string, the exception and caller response require separate verification."
+          },
+          "status": "unknown",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      }
+    ],
+    "initial": {
+      "setup": [
+        {
+          "text": {
+            "ru": "В изолированной разрешённой среде подготовить вызов receive; этот рецепт ещё не выполнялся.",
+            "en": "Prepare a receive call in an authorized isolated environment; this recipe has not been executed."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "input": {
+        "language": "python",
+        "value": "receive({\"amount\": \"invalid\"})"
+      },
+      "values": [
+        {
+          "name": "amount",
+          "value": "\"invalid\"",
+          "unit": "string",
+          "meaning": {
+            "ru": "Предложенный нечисловой вход преобразования.",
+            "en": "Proposed nonnumeric conversion input."
+          }
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "trigger",
+        "title": {
+          "ru": "Преобразовать amount до создания результата",
+          "en": "Convert amount before constructing the result"
+        },
+        "diagram": {
+          "ru": "Преобразование до ответа; выполнение не проверено",
+          "en": "Conversion precedes response; runtime unverified"
+        },
+        "explanation": {
+          "text": {
+            "ru": "Выражение int(payload[\"amount\"]) находится до return; вывод относится к порядку исходного кода.",
+            "en": "The expression int(payload[\"amount\"]) precedes return; this conclusion concerns source order."
+          },
+          "status": "source-supported",
+          "evidence_ids": [
+            "src"
+          ],
+          "gap_ids": []
+        },
+        "sources": [
+          0
+        ],
+        "checks": [
+          {
+            "condition": "int(payload[\"amount\"])",
+            "values": "payload[\"amount\"]=\"invalid\"",
+            "result": {
+              "text": {
+                "ru": "Результат преобразования для этого входа не наблюдался; отдельно проверить ошибку и обработку вызывающей стороной.",
+                "en": "The conversion result for this input has not been observed; separately check failure and caller handling."
+              },
+              "status": "unknown",
+              "evidence_ids": [],
+              "gap_ids": [
+                "missing"
+              ]
+            }
+          }
+        ],
+        "state": {
+          "text": {
+            "ru": "Конструирование словаря ответа следует за преобразованием; измерения состояния отсутствуют.",
+            "en": "Response dictionary construction follows conversion; no state measurement is available."
+          },
+          "status": "source-supported",
+          "evidence_ids": [
+            "src"
+          ],
+          "gap_ids": []
+        },
+        "next": {
+          "text": {
+            "ru": "Поведение вызывающей стороны после ошибки неизвестно.",
+            "en": "Caller behavior after a failure is unknown."
+          },
+          "status": "unknown",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      }
+    ],
+    "impact": [
+      {
+        "text": {
+          "ru": "Нельзя определить потерю данных, средств или доступности без реального вызывающего кода и проверки среды.",
+          "en": "Data loss, financial loss or availability impact cannot be determined without the actual caller and runtime verification."
+        },
+        "status": "unknown",
+        "evidence_ids": [],
+        "gap_ids": [
+          "missing"
+        ]
+      }
+    ],
+    "reproduction": {
+      "environment": [
+        {
+          "text": {
+            "ru": "Версия и настройки целевой среды не предоставлены.",
+            "en": "Target runtime version and configuration are unavailable."
+          },
+          "status": "unknown",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "setup": [
+        {
+          "text": {
+            "ru": "Сначала установить разрешённую изолированную среду и получить вызывающий код.",
+            "en": "First establish an authorized isolated environment and obtain the caller."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "history": [
+        {
+          "text": {
+            "ru": "Сохранённые журналы выполнения отсутствуют; этот пример подготовлен только по исходному коду.",
+            "en": "Saved execution logs are unavailable; this example was prepared from source only."
+          },
+          "status": "unknown",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "text": {
+            "ru": "Проверить отдельно нечисловой amount и корректный amount; ожидание ошибки ещё не является наблюдением.",
+            "en": "Check nonnumeric and valid amount inputs separately; an expected failure is not an observation."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "saved": [
+        {
+          "text": {
+            "ru": "Сохранённые результаты отсутствуют.",
+            "en": "Saved results are unavailable."
+          },
+          "status": "unknown",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "control": [
+        {
+          "text": {
+            "ru": "После разрешения сравнить корректный вход и ошибочный вход, включая реакцию вызывающей стороны.",
+            "en": "After authorization, compare valid and invalid inputs, including caller behavior."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "commands": [
+        "receive({\"amount\": \"invalid\"})",
+        "receive({\"amount\": \"1\"})"
+      ]
+    },
+    "remediation": {
+      "cause": [
+        {
+          "text": {
+            "ru": "Преобразование входа расположено перед созданием результата.",
+            "en": "Input conversion precedes result construction."
+          },
+          "status": "source-supported",
+          "evidence_ids": [
+            "src"
+          ],
+          "gap_ids": []
+        }
+      ],
+      "required": [
+        {
+          "text": {
+            "ru": "Определить требуемое поведение для ошибочного входа совместно с вызывающей стороной.",
+            "en": "Define required invalid-input behavior together with the caller."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "proposal": [
+        {
+          "text": {
+            "ru": "Предложено явно проверять вход и согласовать обработку ошибки; изменение не реализовано.",
+            "en": "Explicit input validation and coordinated failure handling are proposed; no change is implemented."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "validation": [
+        {
+          "text": {
+            "ru": "После реализации выполнить разрешённые проверки корректного и некорректного входа.",
+            "en": "After implementation, perform authorized valid-input and invalid-input checks."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "text": {
+            "ru": "Проверить сохранность состояния и возвращаемый результат на обеих ветках; проверки ещё не выполнены.",
+            "en": "Check state preservation and returned results on both branches; these checks are unexecuted."
+          },
+          "status": "hypothetical",
+          "evidence_ids": [],
+          "gap_ids": [
+            "missing"
+          ]
+        }
+      ]
+    },
+    "gaps": {
+      "missing": {
+        "description": {
+          "ru": "Доказательства выполнения и фактический вызывающий код отсутствуют.",
+          "en": "Runtime evidence and the actual caller are unavailable."
+        },
+        "needed": {
+          "ru": "Разрешённая среда, вызывающий код и сохранённые результаты.",
+          "en": "Authorized runtime, caller source and saved outputs."
+        },
+        "verification": {
+          "ru": "Изучить обработку вызывающей стороной, затем при разрешении сравнить корректный и некорректный вход.",
+          "en": "Inspect caller handling, then compare valid and invalid inputs when authorized."
+        },
+        "impact": {
+          "ru": "Практический эффект для пользователя и восстановление не установлены.",
+          "en": "Practical user impact and recovery remain unestablished."
+        }
+      }
+    },
+    "appendix": {
+      "context": {
+        "repository": {
+          "ru": "Включённый иллюстративный обработчик.",
+          "en": "Included illustrative handler."
+        },
+        "revision": {
+          "ru": "Байты включённого кода привязаны по SHA-256.",
+          "en": "Included source bytes bound by SHA-256."
+        },
+        "environment": {
+          "ru": "Только изучение исходного кода; выполнение отсутствует.",
+          "en": "Source inspection only; no execution."
+        },
+        "reproduction_status": {
+          "ru": "Не выполнялось.",
+          "en": "Not run."
+        }
+      },
+      "prerequisites": {
+        "setup": {
+          "ru": "Предложена подготовка изолированного вызова; она не установлена.",
+          "en": "Proposed isolated call setup; not established."
+        }
+      },
+      "entities": {
+        "actor": {
+          "ru": "Предложенный вызывающий участник",
+          "en": "Proposed caller"
+        },
+        "handler": {
+          "ru": "Иллюстративный обработчик",
+          "en": "Illustrative handler"
+        }
+      },
+      "evidence": {
+        "src": {
+          "ru": "Включённый исходный код; иллюстративный абсолютный путь нужно заменить.",
+          "en": "Included source; its illustrative absolute path must be rebound."
+        }
+      },
+      "outcome": {
+        "ru": "Установлен только порядок исходного кода; эффект среды и вызывающей стороны неизвестен.",
+        "en": "Only source order is established; runtime and caller effects remain unknown."
+      },
+      "review": {
+        "ru": "Независимое принятие этого иллюстративного примера не зарегистрировано.",
+        "en": "No independent acceptance is recorded for this illustrative example."
+      }
+    }
+  }
+}
