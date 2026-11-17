@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reflect and Improve"
+  short_description: "Recall project experience and prepare verified improvements"
+  default_prompt: "Use $reflect-and-improve to recall relevant project experience for this task, verify sources before use and retain active rules."
