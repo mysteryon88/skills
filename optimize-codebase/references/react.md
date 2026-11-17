@@ -1,30 +1,30 @@
-# React: пользовательская задержка, память, bundle
+# React: user-perceived latency, memory, bundle
 
-Установи React/version, framework/bundler, compiler configuration, development/production/production-profiling mode, StrictMode, SSR/RSC и клиентские границы. Не превращай проект в Next.js ради применения рецепта из Next.js.
+Identify React/version, framework/bundler, compiler configuration, development/production/production-profiling mode, StrictMode, SSR/RSC, and client boundaries. Do not convert the project to Next.js just to apply a Next.js recipe.
 
-## Измерения
+## Measurements
 
-React Profiler нужен для атрибуции рендеров, а не для заявления end-to-end latency. `actualDuration` относится к рендеру subtree; `baseDuration` является оценкой. Commit/paint, сеть и browser work измеряются отдельно. Profiler добавляет overhead; для production profiling нужна специальная сборка с profiling, обычная production-сборка отключает его по умолчанию. Development profiling такой production-сборки не требует. Сравнивай одинаковую instrumentation. Пользовательский выигрыш подтверждай обычной production сборкой на представительных устройствах.
+Use React Profiler to attribute renders, not to make end-to-end latency claims. `actualDuration` applies to subtree rendering. `baseDuration` is an estimate. Measure commit/paint, network, and browser work separately. Profiler adds overhead. Production profiling requires a special build with profiling enabled, which is disabled by default in a regular production build. Development profiling does not require this production build. Compare identical instrumentation. Confirm user-perceived improvement using a regular production build on representative devices.
 
-Запиши сценарий click/type/scroll → видимый результат, p50/p95 событий при достаточной выборке, long tasks, количество/размер запросов, переданный сжатый JS, parsed JS и retained heap. Условный Node benchmark для чистой функции не является тестом React rendering/INP. Development/StrictMode timings не подменяют shipped production.
+Record the click/type/scroll → visible result scenario, p50/p95 event timings with a sufficient sample, long tasks, request count/size, transferred compressed JS, parsed JS, and retained heap. A conditional Node benchmark for a pure function is not a React rendering/INP test. Development/StrictMode timings do not stand in for shipped production.
 
-## Порядок поиска
+## Search order
 
-Сначала network waterfalls и лишние запросы, затем bundle/serialization, затем объём рендеринга и вычисления. Используй существующий profiler/browser harness. Не скачивай инструменты, не создавай реальных рассылок/платежей и не отправляй пользовательские данные.
+Start with network waterfalls and unnecessary requests, then bundle/serialization, then rendering and computation volume. Use the existing profiler/browser harness. Do not download tools, create real mailings/payments, or send user data.
 
-| Сигнал | Кандидат | Риск |
+| Signal | Candidate | Risk |
 |---|---|---|
-| Независимые await последовательно | Параллельный запуск с ограничением | Failure/cancellation/order, upstream load, RAM |
-| Большой редко используемый код | Dynamic import и граница загрузки | Chunk waterfall, SSR/hydration, export semantics |
-| Повторный поиск данных | Lookup map/предвычисление | Создание map, duplicate semantics, invalidation |
-| Дорогие rerenders | Локализовать state, стабилизировать осмысленные props | Stale closure, лишний retained cache |
-| Огромный DOM | Virtualization/visible subtree | Focus, accessibility, search, scroll state |
-| Слишком много client props | Передавать нужные данные | SSR/client contracts, auth boundary |
+| Independent awaits run sequentially | Bounded parallel execution | Failure/cancellation/order, upstream load, RAM |
+| Large, rarely used code | Dynamic import and a loading boundary | Chunk waterfall, SSR/hydration, export semantics |
+| Repeated data lookup | Lookup map/precomputation | Map creation, duplicate semantics, invalidation |
+| Expensive rerenders | Localize state, stabilize meaningful props | Stale closure, unnecessary retained cache |
+| Huge DOM | Virtualization/visible subtree | Focus, accessibility, search, scroll state |
+| Too many client props | Pass only the needed data | SSR/client contracts, auth boundary |
 
-Ручной useMemo вводи только после измерения. Calculation должна быть чистой; dependencies содержат все reactive values, имеют постоянную длину и проверяются lint. Тестируй смену каждой зависимости, mount/unmount, suspend/retry и StrictMode. Кэш может быть отброшен React, поэтому корректность не должна зависеть от его наличия/identity. Оцени retained memory и hit/miss/частоту смены dependencies. Проверь, не делает ли нужное уже React Compiler. Нельзя ставить useMemo/useCallback/memo повсюду по одному статическому признаку.
+Add manual useMemo only after measuring. The calculation must be pure. Dependencies must contain all reactive values, have constant length, and pass lint. Test changes to each dependency, mount/unmount, suspend/retry, and StrictMode. React may discard the cache, so correctness must not depend on its presence/identity. Evaluate retained memory and hit/miss/dependency-change frequency. Check whether React Compiler already does what is needed. Do not add useMemo/useCallback/memo everywhere based on one static signal.
 
-Не сохраняй межпользовательские данные в глобальном unbounded Map. Для кэша зафиксируй размер, eviction, lifetime, invalidation и tenant/auth key. TTL/consistency менять нельзя без отдельного решения. Переход на Map должен сохранить первый/последний duplicate и equality исходного кода: Map и === имеют нюансы, например NaN.
+Do not store cross-user data in a global unbounded Map. For a cache, define its size, eviction, lifetime, invalidation, and tenant/auth key. Do not change TTL/consistency without a separate decision. A migration to Map must preserve the original code's first/last duplicate and equality behavior. Map and === have subtleties, such as NaN.
 
-Для больших бинарных наборов рассмотрим TypedArray, но Number-bitwise имеет 32-битную семантику. Большие индексы нельзя вычислять через `i >> 5` без ограничения диапазона. Для BigInt и TypedArray отдельно проверь serialization/JSON и React immutability. Не изменяй буфер под прежней ссылкой так, чтобы memo/React не заметили обновление.
+For large binary sets, consider TypedArray, but Number-bitwise operations have 32-bit semantics. Do not calculate large indexes with `i >> 5` without a range limit. Separately check serialization/JSON and React immutability for BigInt and TypedArray. Do not modify a buffer under the same reference in a way that prevents memo/React from detecting the update.
 
-Источники: [VERCEL], [REACT-PROFILER], [REACT-MEMO], [ECMA-BITS].
+Sources: [VERCEL], [REACT-PROFILER], [REACT-MEMO], [ECMA-BITS].

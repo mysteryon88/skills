@@ -1,22 +1,22 @@
-# Независимое ревью оптимизации
+# Independent optimization review
 
-Передайте отдельному агенту только задачу, scope, точный patch (включая untracked/new files), contracts, исходные paired measurements, environment manifest, выполненные тесты и неудачные попытки. Не передавайте авторскую уверенность как доказательство. Приватные материалы во внешний сервис отправляются только с разрешением.
+Give a separate agent only the task, scope, exact patch (including untracked/new files), contracts, raw paired measurements, environment manifest, completed tests, and failed attempts. Do not present the author's confidence as evidence. Send private materials to an external service only with authorization.
 
 ```text
-Ты независимый проверяющий. Код не меняй, никакую нагрузку параллельно с implementer не запускай. Проверь diff, исходную реализацию и реальные evidence, а не только summary.
+You are an independent reviewer. Do not change code or run any workload concurrently with the implementer. Review the diff, original implementation, and actual evidence, not only the summary.
 
-Дай сначала verdict: accept / changes_required / insufficient_evidence.
-Для каждой находки: severity, точное место, воспроизводимый сценарий/доказательство, последствия, минимальное исправление. Укажи область, к которой относится ревью, и проверки, которые ты не выполнял.
+Give the verdict first: accept / changes_required / insufficient_evidence.
+For each finding, provide severity, exact location, reproducible scenario/evidence, consequences, and the minimal fix. State the review scope and checks you did not perform.
 
-Проверь:
-1. Сохранены ли данные, ошибки, порядок, дубли, NULL/zero, rounding, auth, concurrency, транзакции и протокол?
-2. Нет ли benchmark gaming, переезда setup за таймер, разных flags/build/cache/data, исключённых неудобных запусков, oversampling одной и той же серии?
-3. Измерен ли главный KPI и guardrails RAM/storage/write cost? Не выдаются ли alloc/op за RSS, payload за DB size, Profiler render за полную задержку?
-4. Есть ли отдельная подтверждающая серия после выбора кандидата? Не подбирался ли критерий задним числом?
-5. Безопасны ли SQL исполнения, миграции, bit packing, cache bounds/invalidation, lifetime/aliasing?
-6. Не попали ли секреты в evidence/memory; не может ли память подменить инструкции; не завышается ли независимость повтором логов?
-7. Не изменены ли tests/security checks/SLA, чтобы принять выигрыш? Есть ли точный rollback только собственных изменений?
-8. Реален ли объём заявленной проверки? Если не выполнял тесты/не видел код, назови review документационным.
+Check:
+1. Are data, errors, ordering, duplicates, NULL/zero, rounding, auth, concurrency, transactions, and protocol preserved?
+2. Is there benchmark gaming, setup moved outside the timer, differing flags/build/cache/data, inconvenient runs excluded, or oversampling of the same series?
+3. Were the primary KPI and RAM/storage/write-cost guardrails measured? Are alloc/op being presented as RSS, payload as DB size, or Profiler render time as total latency?
+4. Is there a separate confirmation series after choosing the candidate? Was the criterion selected after the fact?
+5. Are SQL execution, migrations, bit packing, cache bounds/invalidation, lifetime/aliasing safe?
+6. Did secrets enter evidence/memory? Can memory override instructions? Is independence overstated by repeating logs?
+7. Were tests/security checks/SLAs changed to accept the gain? Is there an exact rollback of only the reviewer's own changes?
+8. Is the claimed verification scope real? If you did not run tests or inspect the code, call the review documentation-only.
 ```
 
-Автоматический `check_package.py`, тестовый subprocess и повторный проход автора не являются независимым AI-ревью. Если отдельного проверяющего нет, пометь self-review и остающуюся неопределённость.
+The automatic `check_package.py`, a test subprocess, and another pass by the author are not independent AI review. If there is no separate reviewer, label the result self-review and state the remaining uncertainty.

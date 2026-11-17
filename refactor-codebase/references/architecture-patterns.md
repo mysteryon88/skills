@@ -1,78 +1,78 @@
-# Архитектурные приёмы и декомпозиция
+# Architecture patterns and decomposition
 
 ## Functional Core / Imperative Shell
 
-Отделяй детерминированные решения от IO: core получает данные и возвращает
-решение/результат; shell читает БД, сеть, файловую систему, время и выполняет
-побочные эффекты. Не делай искусственно чистой функцию, которая по смыслу
-управляет транзакцией или жизненным циклом ресурса.
+Separate deterministic decisions from I/O. The core receives data and returns
+a decision/result. The shell reads databases, network, filesystem, and time, and performs
+side effects. Do not make a function artificially pure when its purpose is to
+manage a transaction or resource lifecycle.
 
 ## Extract Function / Move Function
 
-Выделяй законченный смысловой шаг. Имя должно объяснять намерение
-(`validatePayment`, а не `stepTwo`). Проверяй входы/результат, захват локальных
-переменных, порядок side effects, исключения, early returns, async/await и отмену.
+Extract a complete conceptual step. The name should explain the intent
+(`validatePayment`, not `stepTwo`). Check inputs/results, captured local
+variables, side-effect ordering, exceptions, early returns, async/await, and cancellation.
 
 ## Extract Class / Module
 
-Выделяй класс, если есть состояние, идентичность, инварианты или lifecycle.
-Выделяй модуль, если есть связанная группа функций и типов без необходимости
-в объектной идентичности. Для нового модуля документируй responsibility,
-public interface, data ownership, dependencies, invariants, error model и lifecycle.
-Не создавай класс ради каждой функции и не превращай модуль в `utils` dumping ground.
+Extract a class when there is state, identity, invariants, or a lifecycle.
+Extract a module when there is a related group of functions and types that does not need
+object identity. For a new module, document its responsibility,
+public interface, data ownership, dependencies, invariants, error model, and lifecycle.
+Do not create a class for every function or turn a module into a `utils` dumping ground.
 
-## Deep Modules и интерфейсы
+## Deep modules and interfaces
 
-Хороший модуль прячет существенную внутреннюю сложность за маленьким интерфейсом.
-Интерфейс включает сигнатуры, инварианты, допустимый порядок вызовов, ошибки,
-конфигурацию и гарантии производительности/согласованности. Не экспортируй
-внутренние helpers без необходимости. Проверь deletion test: если убрать модуль,
-исчезнет ли сложность или она распределится по callers?
+A good module hides substantial internal complexity behind a small interface.
+The interface includes signatures, invariants, valid call order, errors,
+configuration, and performance/consistency guarantees. Do not export
+internal helpers without need. Check the deletion test: if the module is removed,
+does the complexity disappear or spread across callers?
 
-## Package by Feature / Common Closure
+## Package by feature / common closure
 
-Группируй по функциям продукта и причинам изменения, а не только по
-`controllers/`, `services/`, `utils/`. Git co-change — дополнительное свидетельство,
-но корреляция изменений не доказывает архитектурную связь.
+Group by product features and reasons for change, not only by
+`controllers/`, `services/`, `utils/`. Git co-change is additional evidence,
+but change correlation does not prove an architectural relationship.
 
 ## Dependency Direction / Composition Root
 
-- Доменная политика не должна зависеть от нестабильных деталей SDK/DB/UI.
-- Зависимости создаются в composition root и передаются владельцам.
-- Инвертируй зависимость на реальной границе, где это уменьшает связность.
-- Не вводи DI-контейнер, интерфейс или фабрику, если достаточно параметра.
+- Domain policy should not depend on unstable SDK/DB/UI details.
+- Create dependencies in the composition root and pass them to their owners.
+- Invert a dependency at a real boundary where this reduces coupling.
+- Do not introduce a DI container, interface, or factory when a parameter is enough.
 
-## Value Objects и типы
+## Value objects and types
 
-Используй Value Object / Newtype / branded type для доменных значений с
-инвариантами или разными единицами (Money, Email, DurationMs, UserId), если
-это снижает ошибки и соответствует языку. Не оборачивай примитивы без смысла.
+Use Value Object / Newtype / branded type for domain values with
+invariants or different units (Money, Email, DurationMs, UserId) when
+this reduces errors and fits the language. Do not wrap primitives without purpose.
 
 ## Adapter / Anti-corruption Layer
 
-Изолируй внешние API, SDK, ORM и форматы данных на границе. Внутренняя логика
-должна оперировать собственными понятиями, а не типами вендора. Не создавай
-абстракцию для каждой внешней функции: нужна устойчивая точка замены/тестирования.
+Isolate external APIs, SDKs, ORMs, and data formats at the boundary. Internal logic
+should use its own concepts, not vendor types. Do not create
+an abstraction for every external function. Provide a stable replacement/testing point.
 
 ## State Machines
 
-Для сложного процесса составь таблицу: current state | event | guard | next state |
-side effects. Проверь невозможные комбинации, повторные события, out-of-order
-callbacks, retries, cancellation, timeout и recovery. Для двух простых состояний
-обычное условие может быть понятнее.
+For a complex process, create a table with current state | event | guard | next state |
+side effects. Check impossible combinations, repeated events, out-of-order
+callbacks, retries, cancellation, timeout, and recovery. For two simple states,
+a regular condition may be clearer.
 
-## Монолит: сначала модульный монолит
+## Monolith: start with a modular monolith
 
-1. Выдели bounded contexts по бизнес-смыслу.
-2. Найди входящие вызовы и shared symbols.
-3. Построй граф зависимостей и циклов.
-4. Проверь co-change в Git.
-5. Определи владельцев таблиц/агрегатов и инвариантов.
-6. Проверь транзакционные границы.
-7. Создай внутрипроцессный интерфейс и переведи callers через него.
-8. Проверь отсутствие обходных вызовов.
+1. Identify bounded contexts by business meaning.
+2. Find incoming calls and shared symbols.
+3. Build a dependency and cycle graph.
+4. Check co-change in Git.
+5. Identify owners of tables/aggregates and invariants.
+6. Check transaction boundaries.
+7. Create an in-process interface and route callers through it.
+8. Check that there are no bypass calls.
 
-Сервисная граница оправдана при реальной потребности в независимом deploy,
-scaling или ownership и при наличии модели данных, отказов, consistency,
-idempotency, observability, migration и rollback. Не выноси сервис, который
-продолжает совместно с монолитом писать одни и те же данные в одной транзакции.
+A service boundary is justified when there is a real need for independent deploy,
+scaling, or ownership and there are models for data, failures, consistency,
+idempotency, observability, migration, and rollback. Do not extract a service that
+continues to write the same data together with the monolith in one transaction.

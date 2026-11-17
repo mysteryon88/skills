@@ -1,24 +1,24 @@
-# Rust: данные, владение, сборка
+# Rust: data, ownership, builds
 
-Фиксируй `rustc -Vv`, Cargo.lock, target triple/CPU features, Cargo profile, RUSTFLAGS, config overrides, allocator, feature set. Сравнивай одинаковые режимы; `dev` против `release` не доказывает улучшение алгоритма. Тесты границ/ошибок выполняй также с production profile.
+Record `rustc -Vv`, Cargo.lock, target triple/CPU features, Cargo profile, RUSTFLAGS, config overrides, allocator, and feature set. Compare identical modes. `dev` versus `release` does not prove an algorithmic improvement. Also run boundary/error tests with the production profile.
 
-После проверки scripts/build.rs и локальной среды выбирай существующие проверки, например `cargo test --locked --offline`, `cargo test --release --locked --offline`, `cargo clippy --locked --offline`. Сначала настрой CARGO_TARGET_DIR и temporary/output paths внутри проектного .tmp по [интеграции](integration.md). Offline требует уже имеющихся зависимостей; при отсутствии не скачивай их молча. `cargo test --release` проверяет release-оптимизации, но test harness игнорирует профильный `panic=abort` и использует unwind; production panic-поведение при необходимости проверяй отдельно. `cargo bench` запускай только с известным harness/профилем проекта. `std::hint::black_box` препятствует некоторым оптимизациям benchmark, но не доказывает корректность измерения.
+After checking scripts/build.rs and the local environment, choose existing checks such as `cargo test --locked --offline`, `cargo test --release --locked --offline`, and `cargo clippy --locked --offline`. First configure CARGO_TARGET_DIR and temporary/output paths inside the project .tmp as described in [integration](integration.md). Offline mode requires dependencies to be already available. Do not silently download them if they are missing. `cargo test --release` checks release optimizations, but the test harness ignores profile `panic=abort` and uses unwind. Check production panic behavior separately if needed. Run `cargo bench` only with a known project harness/profile. `std::hint::black_box` prevents some benchmark optimizations but does not prove measurement correctness.
 
-| Узкое место | Кандидат | Проверка обратной стороны |
+| Bottleneck | Candidate | Check the trade-offs |
 |---|---|---|
-| Лишние clone/owned strings | Borrow, &str/&[T], Cow там, где владение условно | Borrow может удерживать весь исходный большой буфер; concurrency/lifetime |
-| Рост Vec/String | Ограниченное with_capacity, reuse, clone_from | Capacity/retention, вход не должен диктовать безлимитную allocation |
-| Pointer chasing | Vec/arena/индексы, SoA для нужных полей | Удаление, стабильность адресов, locality при другом доступе |
-| Большой enum/объект | Выделить крупный редкий payload, сократить representation | Новая allocation/indirection; size_of на целевой платформе |
-| Повторные проходы | Устранить ненужный collect, entry вместо двойного поиска | Порядок, side effects iterator, lazy evaluation |
-| Бинарник | Анализ мономорфизации/зависимостей, LTO/профиль как отдельный эксперимент | Build time, runtime, совместимость CPU, диагностика |
+| Unnecessary clone/owned strings | Borrow, &str/&[T], Cow where ownership is conditional | Borrow may retain the entire large source buffer. Concurrency/lifetime |
+| Vec/String growth | Bounded with_capacity, reuse, clone_from | Capacity/retention. Input must not dictate unbounded allocation |
+| Pointer chasing | Vec/arena/indexes, SoA for needed fields | Deletion, address stability, locality under other access patterns |
+| Large enum/object | Extract large rare payload, reduce representation | New allocation or indirection. Check `size_of` on the target platform |
+| Repeated passes | Remove unnecessary collect, use entry instead of double lookup | Ordering, iterator side effects, lazy evaluation |
+| Binary | Analyze monomorphization/dependencies. Treat LTO/profile as separate experiments | Build time, runtime, CPU compatibility, diagnostics |
 
-Нельзя автоматически включать `panic=abort`, менять overflow-checks, debug-assertions, отключать bounds checks, добавлять unsafe/repr(packed) или `target-cpu=native`. Это может менять контракты, безопасность или переносимость. Даже разрешённые flags сравнивай отдельно с теми же features/входами и тестами. «Больше opt-level» не гарантирует меньше времени или размер.
+Do not automatically enable `panic=abort`, change overflow-checks or debug-assertions, disable bounds checks, add unsafe/repr(packed), or use `target-cpu=native`. These can change contracts, safety, or portability. Compare even authorized flags separately with the same features/inputs and tests. “More opt-level” does not guarantee less time or a smaller binary.
 
-Не считай Vec<bool> упакованным bit-vector по аналогии с C++. Не делай layout сериализацией по умолчанию: явный byte format и versioning важнее `size_of`. Для плотных булевых наборов возможно Vec<u64>, но проверь tail bits, bounds, endian, update/race semantics и полную цену преобразований.
+Do not assume Vec<bool> is a packed bit vector like C++. Do not use memory layout as a serialization format by default. An explicit byte format and versioning matter more than `size_of`. Vec<u64> may suit dense Boolean sets, but check tail bits, bounds, endianness, update/race semantics, and the full conversion cost.
 
-SmallVec, компактные строки, compressed bitmap и arena являются кандидатами только после профиля и с одобрением новых зависимостей. Inline payload уменьшает heap allocations, но увеличивает размер содержащего объекта; размер массива inline не выбирается «на глаз».
+SmallVec, compact strings, compressed bitmaps, and arenas are candidates only after profiling and approval for new dependencies. Inline payload reduces heap allocations but increases the containing object's size. Do not choose the inline array size by guesswork.
 
-Если задача касается хранения сборки, отдельно замерь конечный executable, target/incremental/dependency artifacts, clean build и incremental rebuild. Уменьшение бинарника не означает меньший build cache. Не удаляй кэши пользователя ради цифры.
+If the task concerns build storage, separately measure the final executable, target/incremental/dependency artifacts, clean build, and incremental rebuild. A smaller binary does not mean a smaller build cache. Do not delete the user's caches for a metric.
 
-Источники: [RUST-SKILL], [RUST-PROFILES], [RUST-BLACKBOX], [RUST-ALLOC], [RUST-SIZE]. Пример в examples/rust дан для локальной проверки; факт его выполнения см. VALIDATION.md.
+Sources: [RUST-SKILL], [RUST-PROFILES], [RUST-BLACKBOX], [RUST-ALLOC], [RUST-SIZE]. The example in examples/rust is for local checks. See VALIDATION.md for whether it was run.

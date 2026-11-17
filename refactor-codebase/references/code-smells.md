@@ -1,55 +1,55 @@
-# Каталог code smells и решений
+# Catalog of code smells and remedies
 
-Используй признаки как сигналы для чтения, а не как автоматические пороги.
-Ни одна метрика сама по себе не доказывает, что код надо менять.
+Use these signals to guide inspection, not as automatic thresholds.
+No single metric proves that code should be changed.
 
-| Признак | Что проверить | Возможные приёмы |
+| Signal | What to check | Possible techniques |
 |---|---|---|
-| Long Method | Смешаны ли уровни абстракции, обязанности, IO и вычисления? | Extract Function, Split Phase |
-| Deep Nesting | Можно ли применить guard clauses без изменения порядка эффектов? | Replace Nested Conditional |
-| Long Parameter List | Являются ли параметры смысловой группой? | Introduce Parameter Object |
-| Flag Argument | Выбирает ли boolean разные сценарии/контракты? | Split Function, Enum/Strategy |
-| Repeated Switch | Повторяются ли ветви по типам? | Strategy, Polymorphism |
-| Feature Envy | Функция чаще использует данные другого владельца? | Move Method |
-| Side-effect soup | Перемешаны ли решения и IO? | Functional Core / Imperative Shell |
-| God Object/Class | Несколько независимых причин изменения? | Extract Class/Module |
-| Divergent Change | Один модуль меняется по несвязанным причинам? | Extract Module |
-| Shotgun Surgery | Одно правило меняется в разных местах? | Move/Extract Module |
-| Inappropriate Intimacy | Модули читают/меняют внутренности друг друга? | Encapsulate, ownership, seam |
-| Pass-through Module | Слой только пересылает вызов? | Inline/Collapse Module |
-| Speculative Generality | Абстракция существует ради гипотетического будущего? | Remove abstraction |
-| Cyclic Dependency | Модули образуют цикл? | Invert dependency, stable contract |
-| Duplicate Code | Совпадает бизнес-смысл или только текст? | Extract Function/Module |
-| Data Clumps | Поля часто передаются совместно? | Parameter Object / Value Object |
-| Primitive Obsession | Примитив кодирует доменное понятие с правилами? | Value Object / Newtype |
-| Magic Literal | Значение имеет смысловое имя? | Extract Constant / Enum |
-| Scattered Configuration | Настройка меняется в нескольких местах? | Configuration object |
-| Mutable Shared State | Несколько владельцев меняют один объект? | Encapsulation, ownership |
-| Hidden State Machine | Флаги образуют невозможные сочетания? | Tagged union / state machine |
-| Temporal Coupling | Один метод допустим только после другого? | Explicit lifecycle / type-state |
-| Hardcoded Dependency | Бизнес-логика сама создаёт DB/client/clock/SDK? | DI, adapter |
-| External Type Leakage | Тип SDK проходит через бизнес-слои? | Anti-corruption layer |
-| Error Leakage | Низкоуровневые ошибки протекают наружу? | Translate at module boundary |
-| Unused Code | Проверены ли динамические callers/reflection/entrypoints и правила удаления? | Сохранить либо удалить после требуемого разрешения |
+| Long Method | Are abstraction levels, responsibilities, I/O, and computation mixed? | Extract Function, Split Phase |
+| Deep Nesting | Can guard clauses be used without changing side-effect order? | Replace Nested Conditional |
+| Long Parameter List | Do the parameters form a conceptual group? | Introduce Parameter Object |
+| Flag Argument | Does a boolean select different scenarios/contracts? | Split Function, Enum/Strategy |
+| Repeated Switch | Are branches repeated by type? | Strategy, Polymorphism |
+| Feature Envy | Does the function mostly use data owned elsewhere? | Move Method |
+| Side-effect soup | Are decisions and I/O mixed together? | Functional Core / Imperative Shell |
+| God Object/Class | Are there several independent reasons for change? | Extract Class/Module |
+| Divergent Change | Does one module change for unrelated reasons? | Extract Module |
+| Shotgun Surgery | Does one rule change in several places? | Move/Extract Module |
+| Inappropriate Intimacy | Do modules read/change each other's internals? | Encapsulate, ownership, seam |
+| Pass-through Module | Does the layer only forward a call? | Inline/Collapse Module |
+| Speculative Generality | Does the abstraction exist for a hypothetical future? | Remove abstraction |
+| Cyclic Dependency | Do modules form a cycle? | Invert dependency, stable contract |
+| Duplicate Code | Is the business meaning the same or only the text? | Extract Function/Module |
+| Data Clumps | Are fields often passed together? | Parameter Object / Value Object |
+| Primitive Obsession | Does a primitive encode a domain concept with rules? | Value Object / Newtype |
+| Magic Literal | Does the value have a meaningful name? | Extract Constant / Enum |
+| Scattered Configuration | Is a setting changed in multiple places? | Configuration object |
+| Mutable Shared State | Do multiple owners change the same object? | Encapsulation, ownership |
+| Hidden State Machine | Do flags allow impossible combinations? | Tagged union / state machine |
+| Temporal Coupling | Is one method valid only after another? | Explicit lifecycle / type-state |
+| Hardcoded Dependency | Does business logic create its own DB/client/clock/SDK? | DI, adapter |
+| External Type Leakage | Does an SDK type pass through business layers? | Anti-corruption layer |
+| Error Leakage | Do low-level errors leak outward? | Translate at module boundary |
+| Unused Code | Were dynamic callers/reflection/entrypoints and deletion rules checked? | Keep or remove after obtaining required authorization |
 
-## Safe Abstraction Gate для дублирования
+## Safe Abstraction Gate for duplication
 
-Перед объединением ответь:
-1. Это одна бизнес-политика или только похожая реализация?
-2. Изменяются ли оба фрагмента по одной причине?
-3. Есть ли общее понятие/имя, честное для всех вызовов?
-4. Сохраняются ли различия ошибок, прав, округления, defaults и side effects?
-5. Не появятся ли caller-specific флаги и режимы?
-6. Если реализации разойдутся, это будет баг или законная эволюция?
+Before merging, answer:
+1. Is this one business policy or just a similar implementation?
+2. Do both fragments change for the same reason?
+3. Is there a shared concept/name that is honest for all callers?
+4. Are differences in errors, permissions, rounding, defaults, and side effects preserved?
+5. Will caller-specific flags and modes appear?
+6. If the implementations diverge, will that be a bug or legitimate evolution?
 
-Если разойтись им законно, оставь их раздельными (`keep-duplicated`). Если общая
-абстракция разрослась условными ветками, рассмотри `de-abstract`. Сходство строк
-не является достаточным основанием для объединения.
+If they may legitimately diverge, keep them separate (`keep-duplicated`). If a shared
+abstraction has grown conditional branches, consider `de-abstract`. Similar text
+is not sufficient reason to merge.
 
-Правило трёх — эвристика, не закон. Общее правило иногда нужно выделить при двух
-потребителях, а три похожих блока могут быть разными доменными политиками.
+The rule of three is a heuristic, not a law. A shared rule may be worth extracting with two
+consumers, while three similar blocks may represent different domain policies.
 
-## Приоритет
+## Priority
 
-Оцени отдельно impact, likelihood, confidence и cost/risk. Не выдумывай частоту.
-Редкий сценарий с потерей данных или обходом авторизации может иметь критичный приоритет.
+Assess impact, likelihood, confidence, and cost/risk separately. Do not invent frequency.
+A rare scenario involving data loss or authorization bypass may still have critical priority.

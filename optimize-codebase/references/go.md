@@ -1,10 +1,10 @@
-# Go: CPU, память, IO
+# Go: CPU, memory, I/O
 
-## Обнаружение и измерения
+## Discovery and measurements
 
-Сначала проверь `go version`, go.mod/toolchain, GOARCH/GOOS, build tags, CGO, CPU limits и GOMAXPROCS. Не используй новую API, пока версия проекта её не поддерживает. В примере пакета используется `b.N`; `b.Loop` требует подходящей версии.
+First check `go version`, go.mod/toolchain, GOARCH/GOOS, build tags, CGO, CPU limits, and GOMAXPROCS. Do not use a newer API until the project's version supports it. The package example uses `b.N`. `b.Loop` requires a compatible version.
 
-Выбирай команды из проекта. До запуска настрой `$work`, TEMP/TMP/TMPDIR и Go cache/output paths по [примеру](examples.md#сначала-выбери-рабочий-каталог). В локальном стенде без внешних эффектов типовой набор:
+Choose commands based on the project. Before running them, configure `$work`, TEMP/TMP/TMPDIR, and Go cache/output paths as shown in the [example](examples.md#choose-a-working-directory-first). A typical set for a local environment without external effects is:
 
 ```bash
 go test ./path/to/package
@@ -16,27 +16,29 @@ go tool pprof -alloc_space -top "$work/mem.out"
 go tool pprof -inuse_space -top "$work/mem.out"
 ```
 
-Профилирование выполняй отдельно от измерения обычного времени. Недоступные race/pprof проверки отмечай. Не публикуй net/http/pprof в интернет. Не ставь benchstat или другой инструмент без разрешения; при отсутствии не выдумывай его результат.
+Profile separately from ordinary timing. Mark unavailable race/pprof checks. Do not expose net/http/pprof to the internet. Do not install benchstat or another tool without authorization. Do not invent its results if it is unavailable.
 
-## Кандидаты по профилю
+## Candidates based on the profile
 
-| Сигнал | Что попробовать | Что может ухудшиться |
+| Signal | What to try | What may get worse |
 |---|---|---|
-| Аллокации/copies на горячем пути | Предвыделение по достоверной ограниченной длине, reuse buffer, типизированный formatting, потоковый IO | Завышенная capacity, удержание больших backing arrays, aliasing |
-| Повторный поиск/парсинг | Индекс по ключу, устранение дублированной работы, заранее подготовленный неизменяемый объект | Память/подготовка, правила invalidation, stale data |
-| Давление GC | Меньше краткоживущих объектов и pointer-rich структур | Изменение lifetime, рост retained heap |
-| CPU/cache misses | Непрерывные массивы, плотный bitset, data-oriented layout | Сложность обновлений, false sharing, цена упаковки |
-| Ожидание IO | Batch/stream, корректное reuse соединений, ограниченная конкурентность | Пиковая память, порядок/транзакции, нагрузка downstream |
-| Locks/goroutines | Mutex/block/trace и сокращение секции/очереди | Races, starvation, потеря cancellation/backpressure |
+| Signal | What to try | What may get worse |
+|---|---|---|
+| Allocations/copies on the hot path | Preallocate using a reliable bounded length, reuse buffers, use typed formatting, use streaming I/O | Excess capacity, retaining large backing arrays, aliasing |
+| Repeated lookup/parsing | Index by key, remove duplicated work, prepare an immutable object in advance | Memory/preparation, invalidation rules, stale data |
+| GC pressure | Fewer short-lived objects and pointer-rich structures | Lifetime changes, retained heap growth |
+| CPU/cache misses | Contiguous arrays, dense bitsets, data-oriented layout | Update complexity, false sharing, packing cost |
+| I/O wait | Batching/streaming, correct connection reuse, bounded concurrency | Peak memory, ordering/transactions, downstream load |
+| Locks/goroutines | Mutex/block/trace and shorter critical sections/queues | Races, starvation, loss of cancellation/backpressure |
 
-`sync.Pool` не является постоянным кэшем и не гарантирует наличие объектов. Ограничивай сохраняемую capacity; reset не должен оставлять приватные данные или ссылки. Перевод string/bytes через unsafe без копирования не входит в автономный безопасный режим.
+`sync.Pool` is not a permanent cache and does not guarantee that objects are available. Bound retained capacity. Reset must not leave private data or references behind. Converting between string/bytes through unsafe without copying is outside the standalone safe mode.
 
-## RAM: отдельная проверка
+## RAM: a separate check
 
-Для заявления о RAM измеряй peak RSS и подходящие метрики runtime/живого heap под длительной представительной нагрузкой. Фиксируй GOGC/GOMEMLIMIT, GC activity, phase, concurrency. `B/op` и `allocs/op` оставляй диагностикой аллокаций. Уменьшение GC за счёт более живучего кэша может повысить RAM.
+To make a RAM claim, measure peak RSS and suitable runtime/live-heap metrics under a long-running representative workload. Record GOGC/GOMEMLIMIT, GC activity, phase, and concurrency. Treat `B/op` and `allocs/op` as allocation diagnostics. Reducing GC through a longer-lived cache may increase RAM use.
 
-GOMEMLIMIT — мягкий лимит учитываемой runtime памяти, а не жёсткий предел всего RSS. Не подставляй универсальный процент от памяти контейнера. Тюнинг GC меняет баланс CPU/память и требует нагрузочного замера. Советы про escape/inlining относятся к конкретным implementation+toolchain; после обновления Go прежний выигрыш проверяется заново.
+GOMEMLIMIT is a soft limit on memory accounted for by the runtime, not a hard limit on total RSS. Do not substitute a universal percentage of container memory. GC tuning changes the CPU/memory balance and requires load testing. Advice about escape analysis/inlining applies to a specific implementation+toolchain. Recheck prior gains after upgrading Go.
 
-Перестановка struct fields требует проверки layout, atomics alignment, unsafe/FFI/serialization/reflection и source compatibility. Она не применяется по одной подсказке линтера.
+Reordering struct fields requires checking layout, atomic alignment, unsafe/FFI/serialization/reflection, and source compatibility. Do not do it based only on a linter suggestion.
 
-Источники: [GO-SKILL], [GO-DIAG], [GO-GC], [GO-PPROF], [BENCHSTAT].
+Sources: [GO-SKILL], [GO-DIAG], [GO-GC], [GO-PPROF], [BENCHSTAT].

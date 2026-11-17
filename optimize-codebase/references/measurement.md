@@ -1,44 +1,44 @@
-# Измерения и решение о сохранении правки
+# Measurements and the decision to keep a change
 
-## Контракт перед раундом
+## Contract before a round
 
-Запиши одну главную метрику, практический порог выигрыша и guardrails. Для скорости, RAM и хранения обязательно укажи: измерено; не затронуто и почему; не проверено. Неизмеренный значимый риск не становится нулевым. Если пользователь не задал бюджеты, предложи рабочие значения явно. Пример 5% для времени не является универсальной нормой.
+Record one primary metric, a practical improvement threshold, and guardrails. For speed, RAM, and storage, state what was measured, what was unaffected and why, and what was not checked. An unmeasured material risk is not zero. If the user did not set budgets, explicitly propose working values. A 5% time example is not a universal standard.
 
-Измерения различаются:
-- wall time, CPU time, throughput и хвостовая задержка отвечают на разные вопросы;
-- выделенные байты/операцию, число аллокаций, живой heap и peak RSS не взаимозаменяемы;
-- логические данные, сериализованный payload, таблица с индексами/TOAST, сжатый сетевой ответ, конечный бинарник и build cache имеют разные границы.
+Measurements are distinct:
+- wall time, CPU time, throughput, and tail latency answer different questions.
+- allocated bytes/operation, allocation count, live heap, and peak RSS are not interchangeable.
+- logical data, serialized payload, a table with indexes/TOAST, a compressed network response, final binary, and build cache have different boundaries.
 
-Нельзя назвать снижение alloc/op экономией RAM без измерения соответствующей памяти. Для RAM-цели используй процессные и runtime-метрики, включая peak/steady-state, продолжительность нагрузки и concurrency. На контейнере учитывай cgroup и память внешних процессов. Изолируй измерение профилировщика от контрольного запуска, иначе измеряешь и его стоимость.
+Do not call a decrease in alloc/op a RAM saving without measuring the corresponding memory. For a RAM goal, use process and runtime metrics, including peak/steady state, workload duration, and concurrency. In a container, account for cgroup limits and external process memory. Isolate profiler measurements from the control run, or the profiler's cost is included.
 
-## Воспроизводимость
+## Reproducibility
 
-Фиксируй source hashes/commit, toolchain+implementation, flags/profile/features, hardware/OS, лимиты, workload/dataset/seed, размер/плотность/перекос, cache state, concurrency, команды и границы таймера. Не сохраняй секретные env values; только очищенные значимые настройки.
+Record source hashes/commit, toolchain+implementation, flags/profile/features, hardware/OS, limits, workload/dataset/seed, size/density/skew, cache state, concurrency, commands, and timer boundaries. Do not save secret env values. Record only sanitized relevant settings.
 
-Используй один хост и последовательные соседние пары A/B, затем B/A. Идентичные прогрев, объём полезной работы и setup. Сборки/внешняя нагрузка не должны идти одновременно с измерением. Все исходные отсчёты сохраняй. Исключение допустимо только по записанному объективному событию, не по неудобному знаку дельты.
+Use one host and sequential adjacent A/B pairs, then B/A pairs. Keep warmup, useful work, and setup identical. Builds/external load must not run during measurement. Preserve all raw samples. Exclude a sample only for a recorded objective event, not because its delta is inconvenient.
 
-Не сравнивай debug с release, профилирующую сборку с обычной, старый исторический отчёт с текущим запуском. При оптимизации compiler flags это отдельная гипотеза с одобрением семантических изменений. Корректность проверяй также под тем профилем, для которого заявляется выигрыш.
+Do not compare debug with release, a profiled build with a normal build, or an old historical report with a current run. Optimizing compiler flags is a separate hypothesis and requires approval for semantic changes. Also check correctness under the profile for which the improvement is claimed.
 
-## Статистика без ложной уверенности
+## Statistics without false confidence
 
-Помощник perfkit требует минимум 10 пар для sampled-метрик и считает медиану попарных относительных изменений с разведочным bootstrap-интервалом. Это только фильтр грубых ошибок, не полноценное доказательство значимости. Он не проверяет стационарность, независимость, порядок фактического запуска, правдивость логов или репрезентативность данных.
+The perfkit helper requires at least 10 pairs for sampled metrics and calculates the median of paired relative changes with an exploratory bootstrap interval. This is only a screen for gross errors, not full evidence of significance. It does not check stationarity, independence, actual run order, log accuracy, or data representativeness.
 
-Перед финальной приёмкой сохрани заранее определённый порог, число/бюджет попыток и критерий остановки. Проверь тренды по порядку запусков, разницу AB/BA и зависимость соседних отсчётов. Повторные операции в одном прогретом процессе не равны независимым сериям. Для финального выигрыша сделай новую подтверждающую серию после выбора кандидата, не выбирая из неё только лучшие значения. При множественных гипотезах учитывай selection bias; используй holdout-серию и профильные инструменты вместо бесконечного подбора до «значимого» результата.
+Before final acceptance, preserve the predefined threshold, number/budget of attempts, and stopping criterion. Check trends by run order, the AB/BA difference, and dependence between adjacent samples. Repeated operations in one warmed process are not independent runs. For a final improvement claim, run a new confirmation series after choosing the candidate. Do not select only its best values. For multiple hypotheses, account for selection bias. Use a holdout series and domain-specific tools instead of tuning indefinitely until a “significant” result appears.
 
-Go: benchstat по достаточному числу запусков. Rust: существующий Criterion/другой проверенный harness. Маленький эффект требует более строгих условий. Публикуй величину эффекта, интервал/разброс и ограничения раздельно. p95/p99 запросов нельзя получать из десяти средних batch timings. Для хвоста нужны отдельные события, достаточная выборка и реалистичная нагрузка, не скрывающая очереди.
+Go: use benchstat with a sufficient number of runs. Rust: use the existing Criterion/another validated harness. Small effects require stricter conditions. Report effect size, interval/spread, and limitations separately. Request p95/p99 cannot be derived from ten average batch timings. Tail measurements require individual events, a sufficient sample, and realistic load that does not hide queues.
 
-Точное число сериализованных байтов допускает один замер при фиксированном формате и данных. Размер аллокации полезного массива не равен физической памяти процесса. Нулевой baseline требует абсолютной, а не относительной цели.
+An exact count of serialized bytes can use one measurement when format and data are fixed. The allocation size of a useful array is not the process's physical memory. A zero baseline requires an absolute, not relative, target.
 
-## Полный жизненный цикл
+## Full lifecycle
 
-Измеряй подготовку и steady-state отдельно, затем end-to-end: создание lookup map, упаковку битов, распаковку, загрузку/инвалидацию кэша, создание/поддержку SQL индекса и цену записи. Для Q повторений оцени подготовка + Q × операция. Не выноси дорогую часть за таймер только в candidate.
+Measure setup and steady state separately, then end to end: lookup map creation, bit packing, unpacking, cache load/invalidation, SQL index creation/maintenance, and write cost. For Q repetitions, estimate setup + Q × operation. Do not move an expensive part outside the timer only for the candidate.
 
-В тестовом наборе должны быть малый/обычный/крупный вход, пустые значения, максимальная ширина, высокая/низкая плотность, перекос, cache miss/hit, обновления/удаления и ошибки. Неприменимые сценарии обоснуй. Сохраняй порядок/дубли/точность и байтовую совместимость, если они контрактны.
+The test set should include small/typical/large inputs, empty values, maximum width, high/low density, skew, cache miss/hit, updates/deletions, and errors. Justify inapplicable scenarios. Preserve ordering/duplicates/precision and byte compatibility when they are contractual.
 
-## Решение
+## Decision
 
-Keep: корректность + существенный повторяемый эффект + guardrails + независимая подтверждающая серия + просмотр diff. Revert: подтверждённая регрессия или рост сложности без выигрыша. Inconclusive: шум/нехватка данных. Blocked: небезопасная среда, отсутствующая обязательная проверка, неизвестное поведение.
+Keep: correctness + material repeatable effect + guardrails + independent confirmation series + diff review. Revert: confirmed regression or increased complexity without a gain. Inconclusive: noise/insufficient data. Blocked: unsafe environment, missing required check, or unknown behavior.
 
-`measured_win` помощника не заменяет решение агента: он не знает пропущенных метрик и SLA. Если выигрываем CPU, но тратим больше памяти, это отдельный явно согласованный trade-off. Не суммируй всё в один «балл оптимизации».
+The helper's `measured_win` does not replace the agent's decision. It does not know about omitted metrics and SLAs. If CPU use improves but memory use increases, treat that as a separately agreed trade-off. Do not combine everything into one “optimization score.”
 
-Источники: [GO-DIAG], [GO-GC], [BENCHSTAT], [RUST-PROFILES], [REACT-PROFILER], [PG-EXPLAIN], [FORY], [CODSPEED] в ../SOURCES.json. Здесь сформулированы собственные правила приёмки, а не дословная копия одного источника.
+Sources: [GO-DIAG], [GO-GC], [BENCHSTAT], [RUST-PROFILES], [REACT-PROFILER], [PG-EXPLAIN], [FORY], [CODSPEED] in ../SOURCES.json. These are this package's acceptance rules, not a verbatim copy of one source.

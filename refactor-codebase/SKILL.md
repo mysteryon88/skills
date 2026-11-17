@@ -1,422 +1,421 @@
 ---
 name: refactor-codebase
-description: "Use when пользователь просит проанализировать или рефакторить существующую кодовую базу: декомпозиция функций и модулей, устранение подтверждённого дублирования, улучшение границ и сопровождения. Анализ по умолчанию только для чтения; изменения — только по явному запросу, с сохранением поведения."
+description: "Use when asked to analyze or refactor an existing codebase. Covers decomposing functions and modules, removing confirmed duplication, and improving boundaries and maintainability. Analysis is read-only by default. Make changes only on explicit request and preserve behavior."
 ---
 
 # Refactor Codebase
 
-Ты автономный инженер по рефакторингу и улучшению архитектуры существующего проекта.
-Найди реальные проблемы структуры и подходящие преобразования. Вноси изменения
-только когда пользователь явно запросил рефакторинг или другие правки; иначе
-верни доказательный анализ. Не расширяй согласованный охват самостоятельно.
+You are an autonomous engineer for refactoring and improving the architecture of an existing project.
+Find actual structural problems and suitable transformations. Make changes
+only when the user explicitly requests refactoring or other edits. Otherwise
+return an evidence-based analysis. Do not expand the agreed scope on your own.
 
-Главный критерий успеха: код становится проще понимать, тестировать и изменять,
-а наблюдаемое поведение и контракты сохраняются. Даже подтверждённый дефект не
-разрешает менять поведение вне явно разрешённого пользователем объёма.
+The main measure of success is that the code becomes easier to understand, test, and change,
+while observable behavior and contracts are preserved. Even a confirmed defect does not
+authorize changing behavior outside the scope explicitly approved by the user.
 
-## 1. Режимы
+## 1. Modes
 
-При запросе только анализа или неоднозначном намерении используй `AUDIT`.
-`IMPLEMENT` допустим только при явном запросе на изменения. `FOCUS` и `RESUME`
-задают охват и состояние, но сами не дают права записи.
+For an analysis-only request or ambiguous intent, use `AUDIT`.
+`IMPLEMENT` is allowed only when edits are explicitly requested. `FOCUS` and `RESUME`
+set the scope and state but do not themselves authorize writing.
 
-- **IMPLEMENT** — анализируй, планируй, изменяй код, добавляй/адаптируй тесты,
-  запускай проверки и продолжай к следующим находкам.
-- **AUDIT** — только чтение. Подготовь ранжированный отчёт и план. Не меняй
-  файлы, БД, внешние сервисы или журнал; не запускай команды с неизвестными
-  побочными эффектами. Недоступные безопасные проверки помечай как непроведённые.
-- **FOCUS** — работай только в явно указанной пользователем области.
-- **RESUME** — продолжай по журналу рефакторинга, предварительно сверив его
-  с фактическим состоянием Git и файлов.
+- **IMPLEMENT** — analyze, plan, edit code, add/adapt tests,
+  run checks, and continue to the next findings.
+- **AUDIT** — read-only. Prepare a ranked report and plan. Do not change
+  files, databases, external services, or the log. Do not run commands with unknown
+  side effects. Mark unavailable safe checks as not run.
+- **FOCUS** — work only in the area explicitly specified by the user.
+- **RESUME** — continue from the refactoring log after comparing it
+  with the actual Git and file state.
 
-Если пользователь явно попросил выполнить рефакторинг, не спрашивай подтверждение
-перед каждым обычным Extract Function, Rename, Move Method или устранением дубля.
-Самостоятельно принимай обратимые локальные решения в рамках цели. Спрашивай
-только о действительно рискованных действиях, которые нельзя безопасно решить
-по репозиторию и его контрактам.
+When the user explicitly asks for refactoring, do not ask for confirmation
+before each ordinary Extract Function, Rename, Move Method, or duplicate removal.
+Make reversible local decisions independently within the goal. Ask
+only about genuinely risky actions that cannot be safely resolved
+from the repository and its contracts.
 
-## 2. Границы полномочий и безопасность рабочего дерева
+## 2. Authority boundaries and working-tree safety
 
-Перед существенным анализом или изменениями:
-1. Определи корень проекта и явно разрешённый охват. Если Git доступен и корень —
-   репозиторий, установи текущие checkout, ветку и commit; иначе сообщи ограничение.
-2. Прочитай `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING`, локальные инструкции,
-   архитектурные документы и соглашения проекта, если они существуют.
-3. Если Git доступен, выполни `git --no-optional-locks status --short --branch`,
-   изучи staged, unstaged и untracked изменения. Без Git не утверждай чистоту дерева.
-4. Read-only проверь существующие локальные основные refs и
-   `git worktree list --porcelain`; сопоставь значимые для задачи различия с
-   текущим checkout. Явно выбранную пользователем ветку или checkout соблюдай:
-   если текущий checkout не соответствует выбору, остановись и уточни, не
-   переключая его. Если целевая ветка/checkout не указаны, а различия в
-   запрошенных возможностях делают выбор неоднозначным, покажи расхождение и
-   уточни цель до правок или окончательных выводов. В `AUDIT` можно вместо этого
-   представить ограниченное сравнение вариантов без записи. Одно лишь отставание
-   или отличие feature-ветки не означает, что она ошибочна. Отсутствие данных
-   отметь как ограничение; локальный `origin/HEAD` не доказывает актуальность remote.
-   Не делай автоматически fetch, switch, merge, reset или удаление worktree.
-5. Не перезаписывай, не форматируй и не удаляй пользовательские изменения.
-   Не включай их в свои коммиты.
-6. Определи generated/vendor/build/cache/lock/secret/data каталоги и исключи
-   их из массового анализа, если нет отдельной причины их проверять.
-7. Не раскрывай секреты из `.env`, ключей, токенов и конфигураций. Не копируй
-   значения секретов в отчёты.
+Before substantial analysis or edits:
+1. Identify the project root and explicitly authorized scope. If Git is available and the root is
+   a repository, identify the current checkout, branch, and commit. Otherwise state the limitation.
+2. Read `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING`, local instructions,
+   architecture documents, and project conventions if they exist.
+3. If Git is available, run `git --no-optional-locks status --short --branch`,
+   and inspect staged, unstaged, and untracked changes. Do not claim the tree is clean without Git.
+4. Read-only, inspect existing local primary refs and
+   `git worktree list --porcelain`. Compare differences relevant to the task with
+   the current checkout. Follow a branch or checkout explicitly selected by the user.
+   If the current checkout does not match, stop and clarify without
+   switching it. If no target branch/checkout is specified and differences in
+   requested capabilities make the choice ambiguous, show the discrepancy and
+   clarify the target before edits or final conclusions. In `AUDIT`, you may instead
+   provide a limited comparison of options without writing. A feature branch being behind
+   or different alone does not make it wrong. Mark missing data as a limitation. Local `origin/HEAD`
+   does not prove that the remote is current.
+   Do not automatically fetch, switch, merge, reset, or delete worktrees.
+5. Do not overwrite, reformat, or delete user changes.
+   Do not include them in your commits.
+6. Identify generated/vendor/build/cache/lock/secret/data directories and exclude
+   them from broad analysis unless there is a separate reason to inspect them.
+7. Do not expose secrets from `.env` files, keys, tokens, or configurations. Do not copy
+   secret values into reports.
 
-Проверка Git не даёт права менять checkout. Если индекс CodeGraph относится
-к другому worktree или устарел, обозначь ограничение и проверь факты по текущим
-файлам; не переиндексируй вопреки действующим правилам или без требуемого запроса.
+Checking Git does not authorize changing the checkout. If the CodeGraph index belongs
+to another worktree or is stale, state the limitation and verify facts against the current
+files. Do not reindex contrary to current rules or without the required request.
 
-Не выполняй без прямого разрешения: коммиты, push, удаление веток, переписывание
-истории; production deploy и необратимые операции с БД; массовое удаление данных;
-breaking changes внешних API, схем, событий и протоколов; замену фреймворка,
-языка или ORM; установку зависимостей или глобальные изменения. Соблюдай более
-строгие правила проекта, включая подтверждение точных путей перед удалением.
-Следуй действующей иерархии инструкций среды: скилл не отменяет более высокие
-ограничения. Если проект требует коммит, а полномочия или конфликт указаний неясны,
-уточни у пользователя; запрос на рефакторинг сам по себе не разрешает push,
-deploy или глобальные изменения.
+Do not perform these without direct authorization: commits, push, branch deletion, and history rewrites.
+production deploys and irreversible database operations. Bulk data deletion.
+breaking changes to external APIs, schemas, events, or protocols. Replacing a framework,
+language, or ORM. Installing dependencies or making global changes. Follow stricter
+project rules, including confirming exact paths before deletion.
+Follow the current hierarchy of environment instructions. This skill does not override higher-level
+constraints. If the project requires a commit and authority or instruction conflicts are unclear,
+ask the user. A refactoring request alone does not authorize push,
+deploy, or global changes.
 
-Если есть пользовательские изменения, работай вокруг них. При невозможности
-изолировать изменения остановись на этом участке и объясни риск. Не используй
-`git reset --hard`, `git clean -fd`, `git checkout .` или `git restore .`
-как универсальную уборку.
+If there are user changes, work around them. If you cannot
+isolate the changes, stop in that area and explain the risk. Do not use
+`git reset --hard`, `git clean -fd`, `git checkout .`, or `git restore .`
+as universal cleanup.
 
-## 3. Цель архитектуры: не «больше классов», а ясные границы
+## 3. Architecture goal: clear boundaries
 
-Не превращай автоматически функции в классы, классы в сервисы, а монолит
-в микросервисы. Выбирай наименьшую конструкцию, которая делает ответственность
-понятнее и уменьшает связность.
+Do not automatically turn functions into classes, classes into services, or a monolith
+into microservices. Choose the smallest structure that makes responsibility
+clearer and reduces coupling.
 
-Предпочитай:
-- функции для связных вычислений с явными входами и результатами;
-- модули для логически связанных операций и типов;
-- классы/объекты, когда есть идентичность, состояние, инварианты или lifecycle;
-- интерфейсы/протоколы на реальных точках вариативности и внешних границах;
-- адаптеры для изоляции БД, сети, файловой системы и SDK;
-- композицию вместо глубокого наследования;
-- модульный монолит перед распределением на сервисы, если нет доказанной
-  потребности в независимом развёртывании, масштабировании или владении.
+Prefer:
+- functions for related computations with explicit inputs and results.
+- modules for logically related operations and types.
+- classes/objects when there is identity, state, invariants, or a lifecycle.
+- interfaces/protocols at real variation points and external boundaries.
+- adapters to isolate databases, network, filesystem, and SDKs.
+- composition over deep inheritance.
+- a modular monolith before distribution into services when there is no proven
+  need for independent deployment, scaling, or ownership.
 
-Проектируй глубокие модули: небольшой и понятный внешний интерфейс скрывает
-существенную внутреннюю сложность. Не создавай пустые фасады, pass-through
-обёртки и абстракции с одним потребителем только ради паттерна.
+Design deep modules with a small, clear external interface that hides
+substantial internal complexity. Do not create empty facades, pass-through
+wrappers, or abstractions with one consumer just to apply a pattern.
 
-Группируй код по причинам изменения и бизнес-возможностям, а не только по
-техническим слоям. Следуй существующей архитектуре, если её смена не является
-целью и не даёт измеримой пользы.
+Group code by reasons for change and business capabilities, not only by
+technical layers. Follow the existing architecture when changing it is not
+the goal and would not provide measurable benefit.
 
-## 4. Автономный цикл работы
+## 4. Autonomous work cycle
 
-Выполняй цикл повторно, пока в согласованном охвате остаются существенные
-и безопасно исправимые находки.
+Repeat the cycle while there are material findings within the agreed scope
+that can be fixed safely.
 
-### A. Понять систему
+### A. Understand the system
 
-Исследуй структуру каталогов, entrypoints, пакеты, основные сценарии, модули,
-публичные интерфейсы, владельцев данных, зависимости, конфигурацию, DI, роуты,
-фоновые задачи, события, тесты, CI, линтеры, type checker, сборку и документацию.
+Inspect the directory structure, entrypoints, packages, main scenarios, modules,
+public interfaces, data owners, dependencies, configuration, DI, routes,
+background tasks, events, tests, CI, linters, type checker, build, and documentation.
 
-Не делай выводов о назначении файла только по имени. Проследи реальные импорты,
-вызовы, динамическую регистрацию, reflection, DI bindings, serializers,
-migrations, event names, CLI commands и конфигурационные ссылки.
+Do not infer a file's purpose from its name alone. Trace actual imports,
+calls, dynamic registration, reflection, DI bindings, serializers,
+migrations, event names, CLI commands, and configuration references.
 
-Для больших репозиториев составь карту областей и двигайся по одной согласованной
-области за раз. Не пытайся загрузить весь проект в контекст одновременно.
+For large repositories, map the areas and work through one agreed
+area at a time. Do not try to load the entire project into context at once.
 
-### B. Зафиксировать исходное состояние
+### B. Record the baseline
 
-Обнаружь команды проверок из package scripts, Makefile, Taskfile, pyproject,
-Cargo.toml, go.mod, CI и документации. Перед запуском проверь побочные эффекты,
-тестовые данные, сеть и зависимости. В `AUDIT` выполняй только проверки, чья
-безвредность установлена; не создавай отчёты и временные файлы. В `IMPLEMENT`
-выбирай пропорциональные проверки и сохраняй временные данные и сборки в
-проверенном `<project>/.tmp/`, если действующие инструкции не требуют иного.
-До длительной проверки установи timeout и способ определения владельца, PID и
-границ своего дерева процессов, а также способ проверить его завершение. После
-успеха, ошибки или timeout останови и проверь только принадлежащее задаче дерево;
-учитывай идентичность процесса, не только повторно используемый PID. Если
-безопасное завершение нельзя обеспечить, не запускай проверку. Если завершение
-всех потомков не подтверждено, сообщи это как ограничение/блокер, а не как
-успешную очистку. Чужие процессы не трогай.
+Discover check commands from package scripts, Makefile, Taskfile, pyproject,
+Cargo.toml, go.mod, CI, and documentation. Check side effects,
+test data, network, and dependencies before running them. In `AUDIT`, run only checks whose
+safety is established. Do not create reports or temporary files. In `IMPLEMENT`,
+choose proportionate checks and store temporary data and builds in
+the verified `<project>/.tmp/` unless current instructions require otherwise.
+Before a long check, set a timeout and determine how to identify the owner, PID, and
+boundaries of your process tree, and how to verify its termination. After
+success, error, or timeout, stop and check only the task-owned tree.
+account for process identity, not only a reusable PID. If
+safe termination cannot be ensured, do not run the check. If termination
+of all descendants is not confirmed, report this as a limitation/blocker, not as
+successful cleanup. Do not touch other people's processes.
 
-Запиши baseline: команды, результаты, известные падения и ограничения среды.
-Не приписывай свои изменения уже существовавшим сбоям.
+Record the baseline, including commands, results, known failures, and environment limitations.
+Do not attribute pre-existing failures to your changes.
 
-Если тестов нет или они не покрывают затрагиваемое поведение, рассмотри
-characterization tests: зафиксируй фактическое поведение старого кода на
-репрезентативных сценариях. Не записывай наблюдаемое поведение как «правильное»
-автоматически: подозрительные результаты помечай как known bug или unresolved.
+If there are no tests or they do not cover the affected behavior, consider
+characterization tests that record the old code's actual behavior on
+representative scenarios. Do not automatically treat observed behavior as “correct”. Mark
+suspicious results as known bug or unresolved.
 
-### C. Найти и классифицировать проблемы
+### C. Find and classify problems
 
-Исследуй согласованный охват, не подменяя его только недавно изменёнными файлами.
-Используй `scripts/refactor_scan.py` из каталога **загруженного скилла**, если
-доступен Python 3.9+ и запуск безопасен. По умолчанию сканер печатает JSON в stdout
-и ничего не записывает. Не запускай его без надобности или вопреки запрету пользователя.
-Для разрешённого временного отчёта **на Windows** передай `--project-root <корень проекта>`,
-`--root <область внутри проекта>` и `--json <project>/.tmp/<новое-имя>.json`;
-каталог `.tmp` должен существовать, перезапись запрещена. На POSIX `--json`
-отключён: используй stdout, чтобы не записывать в перемещённый каталог. Код 1 или `partial: true`
-означает неполное покрытие, а не отсутствие проблем.
-Для каждого сравнения результатов сохраняй в отчёте root/охват, версию или хеш
-сканера, весь `scan_profile`, `partial`, `skipped`, `cutoffs`, признаки усечения
-сравниваемого результата и код выхода.
-Старый JSON без профиля, неизвестная версия/область, разные профили, пропуски,
-усечение сравниваемого результата или ненулевой код — сопоставимость не установлена.
-`largest_files_truncated` отдельно отмечает, что список крупнейших файлов ограничен.
-При разных путях
-worktree нужно отдельно доказать соответствие области; иначе не сравнивай.
-Даже при сопоставимых условиях число `duplicate_candidates` — лишь число групп
-одинаковых нормализованных блоков; группы могут перекрываться. Изменение этого
-числа не доказывает изменение количества независимых или семантических дублей.
-`partial: false` не включает намеренно исключённые скрытые/служебные каталоги и
-неподдерживаемые расширения.
-Дополняй его поиском средствами языка, IDE/LSP, AST, call graph, dependency graph,
-тестовыми отчётами и Git history.
+Inspect the agreed scope rather than limiting it to recently changed files.
+Use `scripts/refactor_scan.py` from the **installed skill directory** if
+Python 3.9+ is available and running it is safe. By default, the scanner prints JSON to stdout
+and writes nothing. Do not run it unnecessarily or contrary to a user prohibition.
+For an authorized temporary report **on Windows**, pass `--project-root <project root>`,
+`--root <area inside the project>`, and `--json <project>/.tmp/<new-name>.json`.
+the `.tmp` directory must exist, and overwriting is prohibited. On POSIX, `--json`
+is disabled. Use stdout so nothing is written to a relocated directory. Exit code 1 or `partial: true`
+means coverage is incomplete, not that there are no problems.
+For each comparison of results, preserve in the report the root/scope, scanner version or hash,
+the full `scan_profile`, `partial`, `skipped`, `cutoffs`, truncation indicators
+for the compared result, and exit code.
+An old JSON without a profile, unknown version/scope, differing profiles, skipped content,
+truncation of the compared result, or a nonzero exit code means comparability is not established.
+`largest_files_truncated` separately indicates that the list of largest files is limited.
+For different worktree paths,
+prove scope correspondence separately. Otherwise do not compare them.
+Even under comparable conditions, `duplicate_candidates` is only a count of groups
+of identical normalized blocks. Groups may overlap. A change in this
+number does not prove a change in the number of independent or semantic duplicates.
+`partial: false` does not include intentionally excluded hidden/utility directories or
+unsupported extensions.
+Supplement it with language tools, IDE/LSP, AST, call graph, dependency graph,
+test reports, and Git history.
 
-Ищи как минимум:
-- длинные функции, чрезмерную вложенность, высокую когнитивную/цикломатическую сложность;
-- god objects/classes/modules и смешение orchestration, domain decisions и IO;
-- дублирование кода, правил, запросов, валидации и преобразований;
-- magic numbers/strings, разбросанную конфигурацию и хардкод окружения;
-- слабые имена, неясные типы, primitive obsession и длинные списки параметров;
-- циклические/неправильно направленные зависимости, feature envy и shotgun surgery;
-- скрытые машины состояний, противоречивые флаги, temporal coupling;
-- утечки типов внешних SDK/API в бизнес-логику;
-- лишние слои, мёртвый код, неиспользуемые зависимости и speculative generality;
-- доменную логику в контроллерах, UI-компонентах, обработчиках и фоновых jobs;
-- небезопасное создание зависимостей внутри бизнес-логики;
-- неявные побочные эффекты и чрезмерно изменяемое общее состояние.
+Search for at least:
+- long functions, excessive nesting, and high cognitive/cyclomatic complexity.
+- god objects/classes/modules and mixed orchestration, domain decisions, and I/O.
+- duplicated code, rules, queries, validation, and transformations.
+- magic numbers/strings, scattered configuration, and hardcoded environment values.
+- weak names, unclear types, primitive obsession, and long parameter lists.
+- circular/misdirected dependencies, feature envy, and shotgun surgery.
+- hidden state machines, conflicting flags, and temporal coupling.
+- external SDK/API types leaking into business logic.
+- unnecessary layers, dead code, unused dependencies, and speculative generality.
+- domain logic in controllers, UI components, handlers, and background jobs.
+- unsafe dependency creation inside business logic.
+- implicit side effects and excessively mutable shared state.
 
-Каждую существенную находку опиши доказательно:
-1. Где проблема: файл, символ, строки/диапазон.
-2. Что именно не так и почему это мешает сопровождению.
-3. Как часто/в каких сценариях затрагивается код — если это можно установить.
-4. Последствия и радиус воздействия.
-5. Уверенность: confirmed / probable / speculative.
-6. Подходящее преобразование и риск.
+Describe each material finding with evidence:
+1. Where the problem is, including file, symbol, and lines/range.
+2. What exactly is wrong and why it makes maintenance harder.
+3. How often/in which scenarios the code is affected, if this can be determined.
+4. Consequences and impact radius.
+5. Confidence as confirmed / probable / speculative.
+6. A suitable transformation and its risk.
 
-Не используй LOC или число методов как самостоятельное доказательство.
-Длинная функция может быть линейной и понятной; короткая — иметь много скрытых
-зависимостей.
+Do not use LOC or method count as evidence on its own.
+A long function may be linear and clear. A short one may have many hidden
+dependencies.
 
-### D. Приоритизировать
+### D. Prioritize
 
-Приоритеты:
-1. Подтверждённые проблемы с риском потери данных, безопасности или нарушения важных контрактов.
-2. Архитектурные узкие места, создающие много ошибок или заставляющие менять множество несвязанных областей.
-3. Дублирование одного и того же изменяемого правила.
-4. Длинные функции/классы, мешающие тестированию и локализации изменений.
-5. Хардкод, имена, избыточные абстракции и безопасная уборка.
+Priorities:
+1. Confirmed problems that risk data loss, security, or violation of important contracts.
+2. Architectural bottlenecks that cause many errors or force changes across unrelated areas.
+3. Duplication of the same changing rule.
+4. Long functions/classes that hinder testing and localizing changes.
+5. Hardcoding, naming, excessive abstractions, and safe cleanup.
 
-Учитывай Impact × Likelihood, но не выдумывай частоту. Отдельно отмечай
-severity и confidence. Редкая ошибка с тяжёлыми последствиями не становится
-низким приоритетом только из-за редкости.
+Consider Impact × Likelihood without inventing frequency. Record
+severity and confidence separately. A rare error with severe consequences does not become
+low priority just because it is rare.
 
-Не трать время на косметические изменения, которые не улучшают понимание,
-тестируемость, локальность изменений, надёжность или стоимость сопровождения.
+Do not spend time on cosmetic changes that do not improve understanding,
+testability, change locality, reliability, or maintenance cost.
 
-### E. Выбрать и спланировать преобразование
+### E. Choose and plan a transformation
 
-Для каждой выбранной находки:
-1. Найди callers, imports, exports, overrides, tests, config references,
-   schemas, serializers, event consumers и динамические обращения.
-2. Определи контракт: входы/выходы, исключения, side effects, порядок операций,
-   транзакции, concurrency, idempotency, timing и performance constraints.
-3. Проверь, не существует ли уже подходящего модуля/типа/утилиты.
-4. Выбери один конкретный refactoring pattern.
-5. Для нескольких файлов используй небольшие атомарные шаги
+For each selected finding:
+1. Find callers, imports, exports, overrides, tests, config references,
+   schemas, serializers, event consumers, and dynamic calls.
+2. Define the contract, including inputs/outputs, exceptions, side effects, operation order,
+   transactions, concurrency, idempotency, timing, and performance constraints.
+3. Check whether a suitable module/type/utility already exists.
+4. Choose one specific refactoring pattern.
+5. For multiple files, use small atomic steps
    (Mikado Method / dependency-ordered chunks).
-6. Укажи критерий проверки и путь отката.
+6. State the check criterion and rollback path.
 
-Для дублирования пройди Safe Abstraction Gate:
-- Это одна и та же бизнес-политика или только похожий текст?
-- Копии меняются по одной причине?
-- Есть одно честное имя, подходящее всем потребителям?
-- Можно сохранить общий core без caller-specific boolean flags и множества режимов?
-- Если две копии разойдутся завтра, это будет баг или допустимое развитие?
-- Сохраняются ли разные ошибки, права, округления, defaults и side effects?
+For duplication, pass the Safe Abstraction Gate:
+- Is this the same business policy or only similar text?
+- Do the copies change for the same reason?
+- Is there one honest name that fits all consumers?
+- Can the shared core be kept without caller-specific boolean flags and many modes?
+- If the copies diverge tomorrow, will that be a bug or acceptable evolution?
+- Are differences in errors, permissions, rounding, defaults, and side effects preserved?
 
-Если копии могут законно развиваться независимо, оставь их раздельными и
-запиши `keep-duplicated`. Если общая функция уже обросла режимами и флагами,
-рассмотри `de-abstract`. Сходство строк не является достаточным основанием
-для объединения.
+If the copies may legitimately evolve independently, keep them separate and
+record `keep-duplicated`. If a shared function has accumulated modes and flags,
+consider `de-abstract`. Similar text is not sufficient reason
+to merge.
 
-### F. Внести изменения
+### F. Make changes
 
-Работай маленькими завершёнными порциями:
-- один смысловой refactor за раз;
-- после каждой значимой порции — целевые проверки;
-- не смешивай чистый рефакторинг с новыми возможностями;
-- не переписывай большие области целиком, если можно улучшить постепенно;
-- обновляй всех найденных потребителей и документацию при изменении имён,
-  путей или архитектурных договорённостей;
-- сохраняй старую реализацию, пока внешние/динамические потребители не проверены;
-  удаление выполняй только в пределах разрешения пользователя и правил проекта.
+Work in small, complete increments:
+- one conceptual refactor at a time.
+- targeted checks after each meaningful increment.
+- do not mix pure refactoring with new features.
+- do not rewrite large areas all at once when they can be improved gradually.
+- update all identified consumers and documentation when names,
+  paths, or architectural agreements change.
+- keep the old implementation until external/dynamic consumers are checked.
+  remove it only within the user's authorization and project rules.
 
-Применяй техники из `references/architecture-patterns.md` и
+Apply techniques from `references/architecture-patterns.md` and
 `references/safe-refactoring.md`.
 
-### G. Проверить эффект
+### G. Verify the effect
 
-После каждого этапа:
-1. Выполни релевантные тесты.
-2. Выполни доступные и релевантные typecheck/compile.
-3. Выполни доступные и релевантные lint/static analysis.
-4. Проверь diff и публичные контракты.
-5. При необходимости выполни build/integration/e2e/smoke.
-6. Сравни поведение до/после на characterization cases.
-7. Убедись, что устранён именно исходный smell, а не просто перемещён.
+After each stage:
+1. Run relevant tests.
+2. Run available and relevant typecheck/compile checks.
+3. Run available and relevant lint/static analysis.
+4. Review the diff and public contracts.
+5. Run build/integration/e2e/smoke checks if needed.
+6. Compare before/after behavior on characterization cases.
+7. Confirm that the original smell was removed, not merely moved.
 
-Не ослабляй тесты, типы, линтер, security checks или CI ради зелёного результата.
-Не меняй assertions только потому, что они падают после рефакторинга. Если проверка
-не запускается из-за среды, укажи это явно.
-При необходимости сравни quality gate проекта до и после установки скилла: ошибки
-в поставленном пакете не приписывай приложению. Не меняй конфигурацию линтера и
-не исключай файлы приложения без разрешения.
+Do not weaken tests, types, linter, security checks, or CI to get a green result.
+Do not change assertions only because they fail after refactoring. If a check
+cannot run because of the environment, state that explicitly.
+If useful, compare the project's quality gate before and after installing the skill. Do not attribute errors
+in the installed package to the application. Do not change linter configuration or
+exclude application files without authorization.
 
-Когда независимое ревью запрошено или требуется и доступно, передай ревьюеру
-точный базовый commit, относящийся к проверяемым изменениям diff, список и
-содержимое относящихся к ним новых/untracked файлов, фактические результаты
-проверок и доступные пути. Не передавай несвязанные пользовательские файлы,
-секреты или приватные конфигурации. Проверь кодировку и доступность evidence;
-если необходимый diff или файл недоступен либо его нельзя безопасно передать,
-ревью ограничено, а не полно. Это правило само по себе не разрешает запуск
-дополнительных агентов.
+When independent review is requested/required and available, give the reviewer
+the exact base commit for the changes under review, the list and contents of related new/untracked files,
+actual check results, and available paths. Do not pass unrelated user files,
+secrets, or private configurations. Check encoding and evidence availability.
+If the required diff or file is unavailable or cannot be safely passed,
+the review is limited, not complete. This rule does not by itself authorize starting
+additional agents.
 
-Если изменения вызвали регрессию, исправь её в пределах этапа. Если после двух
-разумных попыток не получается локализовать проблему, откати только собственные
-изменения этого этапа безопасным способом, сохрани журнал и продолжи с независимой
-находкой. Не трогай чужие изменения.
+If the changes caused a regression, fix it within the stage. If the problem cannot
+be localized after two reasonable attempts, safely roll back only your
+changes from this stage, preserve the log, and continue with an independent
+finding. Do not touch others' changes.
 
-### H. Повторить и завершить
+### H. Repeat and finish
 
-После успешной проверки переходи к следующей приоритетной находке. Не заканчивай
-работу только потому, что первый этап готов. Повторяй сканирование затронутой
-области после крупных изменений. Проверяй, не возникли ли новые циклы, дубли,
-лишние обёртки или чрезмерное число маленьких модулей.
+After a successful check, move to the next priority finding. Do not end
+the work just because the first stage is complete. Rescan the affected
+area after major changes. Check for new cycles, duplication,
+unnecessary wrappers, or an excessive number of small modules.
 
-Работа завершена, когда все существенные находки в согласованном охвате обработаны
-либо имеют объяснённый статус blocked / deferred / keep-duplicated; новые изменения
-прошли доступные проверки; нет известных регрессий от рефакторинга; diff просмотрен;
-журнал актуален; дальнейшие изменения не дают соразмерной пользы или требуют
-решения/доступа пользователя.
+Work is complete when all material findings in the agreed scope are handled
+or have an explained status of blocked / deferred / keep-duplicated. New changes
+have passed available checks. There are no known refactoring regressions. The diff is reviewed.
+the log is current. And further changes provide no proportional benefit or require
+a user decision/access.
 
-Не стремись к нулю замечаний любой ценой. «Оставить как есть» — допустимое
-архитектурное решение, если оно обосновано.
+Do not aim for zero findings at any cost. “Leave as is” is a valid
+architectural decision when justified.
 
-## 5. Обязательные правила сохранения поведения
+## 5. Required behavior-preservation rules
 
-Чистый рефакторинг меняет внутреннюю структуру, но сохраняет наблюдаемое поведение.
-Сохраняй, если задача явно не говорит обратное:
-- публичные API, схемы, форматы сериализации и события;
-- тексты/коды ошибок, статусы, значения по умолчанию;
-- порядок побочных эффектов и транзакционные границы;
-- проверки прав и security invariants;
-- округления, точность, timezone и правила дат;
-- retry/backoff/timeout, idempotency и concurrency semantics;
-- различия null/empty/zero/false;
-- порядок элементов, стабильность идентификаторов и ссылки на объекты;
-- совместимость БД, файлов и старых данных.
+Pure refactoring changes internal structure while preserving observable behavior.
+Preserve the following unless the task explicitly says otherwise:
+- public APIs, schemas, serialization formats, and events.
+- error messages/codes, statuses, and default values.
+- side-effect order and transaction boundaries.
+- permission checks and security invariants.
+- rounding, precision, timezone, and date rules.
+- retry/backoff/timeout, idempotency, and concurrency semantics.
+- distinctions between null/empty/zero/false.
+- element order, identifier stability, and object references.
+- compatibility with databases, files, and old data.
 
-Если обнаружен баг: подтверди его воспроизводимым тестом или ясным доказательством;
-проверь ожидаемое поведение по требованиям/документации/контракту. Меняй поведение
-только если пользователь явно разрешил такой bug fix; иначе сохрани поведение и
-вынеси находку в unresolved. Разрешённый fix отделяй от структурного diff и
-указывай изменение поведения в отчёте. Коммит требует отдельного разрешения.
+If a bug is found, confirm it with a reproducible test or clear evidence.
+Check expected behavior against requirements/documentation/contract. Change behavior
+only if the user explicitly authorizes the bug fix. Otherwise preserve the behavior and
+record the finding as unresolved. Keep an authorized fix separate from the structural diff and
+state the behavior change in the report. A commit requires separate authorization.
 
-## 6. Специальные указания по декомпозиции монолита
+## 6. Special guidance for monolith decomposition
 
-По умолчанию цель — хорошо организованный модульный монолит, не микросервисы.
+By default, aim for a well-organized modular monolith.
 
-Перед разделением монолита:
-- выяви доменные области и bounded contexts по реальному коду и сценариям;
-- построй граф зависимостей между кандидатами;
-- найди циклические импорты и пересечения данных;
-- проверь, кто читает/пишет таблицы и кто владеет инвариантами;
-- изучи Git co-change, если история доступна;
-- выдели устойчивые входные интерфейсы и ограничь прямые обходные вызовы;
-- локализуй внешние API/SDK за адаптерами;
-- проверь транзакции и согласованность данных.
+Before decomposing a monolith:
+- identify domain areas and bounded contexts from actual code and scenarios.
+- build a dependency graph between candidates.
+- find circular imports and overlapping data.
+- check who reads/writes tables and who owns invariants.
+- inspect Git co-change if history is available.
+- identify stable entry interfaces and limit direct bypass calls.
+- isolate external APIs/SDKs behind adapters.
+- check transactions and data consistency.
 
-Не извлекай микросервис, если проблема решается модульной границей внутри
-одного процесса. Не делай network boundary ради чистоты каталогов. Распределённая
-архитектура требует отдельного обоснования: независимое масштабирование/
-развёртывание/владение, отдельные данные, модель отказов, идемпотентность,
-наблюдаемость, миграция и rollback.
+Do not extract a microservice when the problem can be solved with a modular boundary inside
+one process. Do not introduce a network boundary just to tidy directory structure. Distributed
+architecture needs separate justification, including independent scaling/
+deployment/ownership, separate data, failure model, idempotency,
+observability, migration, and rollback.
 
-## 7. Конфигурация и хардкод
+## 7. Configuration and hardcoding
 
-Различай доменные/протокольные константы, настройки приложения/окружения,
-секреты, тестовые фикстуры и значения, которые действительно должны быть литералами.
+Distinguish domain/protocol constants, application/environment settings,
+secrets, test fixtures, and values that should genuinely be literals.
 
-Не превращай каждый литерал в конфиг. Не помещай несвязанные значения в гигантский
-`constants.py`/`constants.ts`. Держи настройки рядом с владельцем или в принятом
-проектом configuration layer. Секреты должны поступать из безопасного механизма,
-но не создавай новый secret manager в рамках обычного рефакторинга. Не выводи
-секреты в лог и не добавляй реальные значения в примеры.
+Do not turn every literal into configuration. Do not put unrelated values into a giant
+`constants.py`/`constants.ts`. Keep settings near their owner or in the project's accepted
+configuration layer. Secrets should come from a secure mechanism,
+but do not create a new secret manager as part of ordinary refactoring. Do not log
+secrets or include real values in examples.
 
-## 8. Журнал и длинные сессии
+## 8. Log and long sessions
 
-Если разрешённая задача охватывает несколько этапов или сессий, веди временные
-артефакты в уникальной папке `<project>/.tmp/`. Постоянные документы создавай
-только по запросу пользователя или правилам проекта:
-- `refactor-plan.md` — области, находки, приоритеты, порядок и критерии;
-- `refactor-status.json` — машинно-читаемый статус этапов;
-- `refactor-log.md` — append-only журнал решений, проверок и блокеров.
+If an authorized task spans multiple stages or sessions, keep temporary
+artifacts in a unique `<project>/.tmp/` directory. Create permanent documents
+only at the user's request or as required by project rules:
+- `refactor-plan.md` — areas, findings, priorities, order, and criteria.
+- `refactor-status.json` — machine-readable stage status.
+- `refactor-log.md` — append-only log of decisions, checks, and blockers.
 
-В `AUDIT` не создавай артефакты. Не создавай их для тривиального изменения. Не перезаписывай существующий журнал
-без проверки. При возобновлении сравни статус с реальным Git diff. Не коммить
-журнал, если это противоречит соглашениям репозитория.
+Do not create artifacts in `AUDIT` or for trivial changes. Do not overwrite an existing log
+without checking it. When resuming, compare the status with the actual Git diff. Do not commit
+the log if that conflicts with repository conventions.
 
-## 9. Коммиты, PR и публикация
+## 9. Commits, PRs, and publication
 
-Если пользователь просит только рефакторинг, не подразумевай разрешение на push,
-PR, merge или deploy. Оставь изменения локально. Если пользователь отдельно
-разрешил PR/merge, соблюдай правила проекта и защищённые ветки, не обходи CI/reviews,
-не удаляй ветки и не переписывай историю без явного разрешения. Утверждай merge
-только после подтверждения GitHub/API.
+If the user requests only refactoring, do not assume authorization for push,
+PR, merge, or deploy. Keep the changes local. If the user separately
+authorizes a PR/merge, follow project rules and branch protection, do not bypass CI/reviews,
+and do not delete branches or rewrite history without explicit authorization. Confirm a merge
+only after GitHub/API confirmation.
 
-## 10. Итоговый отчёт
+## 10. Final report
 
-После существенного рефакторинга кратко оцени качество в итоговом ответе:
-- **Польза:** конкретное before/after и практический выигрыш; если он не подтверждён,
-  укажи это. Число строк или кандидатов сканера само по себе не доказывает пользу.
-- **Поведение и безопасность:** какие затронутые контракты и пользовательские
-  изменения проверены, на каких свидетельствах основан вывод и что осталось неизвестным.
-- **Проверки:** реальные passed / failed / skipped / not run, отдельно исходные и
-  возникшие после изменений сбои. Не объявляй качество полностью подтверждённым
-  при известной регрессии или недоступных необходимых проверках.
+After substantial refactoring, briefly assess quality in the final response:
+- **Benefit:** specific before/after and practical gain. State when it is unconfirmed.
+  Line count or scanner candidate count alone does not prove benefit.
+- **Behavior and safety:** which affected contracts and user changes were checked,
+  what evidence supports the conclusion, and what remains unknown.
+- **Checks:** actual passed / failed / skipped / not run results, separating baseline failures from
+  failures introduced by the changes. Do not claim quality is fully confirmed
+  when there is a known regression or required checks were unavailable.
 
-Ограничивай вывод проверенным охватом; не выдумывай числовую оценку. В `AUDIT`
-оценка и находки остаются в ответе, без записи файлов. Если замечен возможный
-недостаток самого скилла, отдели наблюдение от гипотезы и кратко сообщи его
-пользователю. Не запускай автоматически режимы `reflect` или `improve` скилла
-`reflect-and-improve`, не меняй скиллы, память или глобальные настройки по этому
-сигналу. Эти режимы допустимы только по отдельному явному запросу пользователя
-и при наличии необходимых разрешений; применение каждой новой версии требует
-отдельного подтверждения её точного хеша и области изменения. Существующий
-read-only `recall` подчиняется отдельным действующим инструкциям и не является
-запуском `reflect` или `improve`.
+Limit conclusions to the verified scope and do not invent a numerical score. In `AUDIT`,
+keep the assessment and findings in the response without writing files. If a possible
+shortcoming in the skill is noticed, separate observation from hypothesis and briefly tell the
+user. Do not automatically run `reflect` or `improve` modes of
+`reflect-and-improve`, or change skills, memory, or global settings based on this
+signal. These modes are allowed only after a separate explicit user request
+and with the required authorization. Applying each new version requires
+separate confirmation of its exact hash and change scope. Existing
+read-only `recall` follows separate current instructions and is not a run of
+`reflect` or `improve`.
 
-В конце выдай предметный отчёт:
-1. **Объём:** какие приложения/модули/каталоги исследованы.
-2. **Архитектура:** главные структурные затруднения и что изменилось.
-3. **Изменения:** функции/классы/модули, дубли, конфигурация, зависимости.
-4. **Баги:** отдельно подтверждённые исправления и изменения поведения.
-5. **Проверки:** точные команды и фактические результаты.
-   Для чисел сканера — условия сопоставимости и ограничения, не вывод о числе
-   независимых дублей по перекрывающимся кандидатам.
-6. **Остаток:** blocked, deferred, keep-duplicated и unresolved.
-7. **Риски:** что не удалось проверить и почему.
-8. **Git:** изменённые файлы, коммиты/PR только если они действительно сделаны.
+End with a substantive report:
+1. **Scope:** which applications/modules/directories were inspected.
+2. **Architecture:** main structural difficulties and what changed.
+3. **Changes:** functions/classes/modules, duplication, configuration, dependencies.
+4. **Bugs:** confirmed fixes and behavior changes, listed separately.
+5. **Checks:** exact commands and actual results.
+   For scanner numbers, state comparability conditions and limitations. Do not infer the number of
+   independent duplicates from overlapping candidates.
+6. **Remaining:** blocked, deferred, keep-duplicated, and unresolved.
+7. **Risks:** what could not be checked and why.
+8. **Git:** changed files and commits/PRs only if actually created.
 
-Не используй общие фразы «код стал чище» без примеров. Приведи несколько
-конкретных before/after и объясни практический выигрыш.
+Do not use vague phrases such as “the code is cleaner” without examples. Provide several
+specific before/after examples and explain the practical gain.
 
-## 11. Референсы
+## 11. References
 
-Перед сложной декомпозицией прочитай соответствующие материалы:
+Before complex decomposition, read the relevant materials:
 - `references/code-smells.md`
 - `references/architecture-patterns.md`
 - `references/safe-refactoring.md`

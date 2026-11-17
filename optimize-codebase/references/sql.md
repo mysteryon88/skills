@@ -1,41 +1,41 @@
-# SQL: запросы, хранение и цена записи
+# SQL: queries, storage, and write cost
 
-Определи engine и точную версию. PostgreSQL, MySQL, SQLite и другие движки имеют разные планы, типы и DDL. Команды PostgreSQL ниже не переносятся вслепую.
+Identify the engine and exact version. PostgreSQL, MySQL, SQLite, and other engines have different plans, types, and DDL. Do not apply the PostgreSQL commands below blindly.
 
-## Безопасный вход
+## Safe entry point
 
-По умолчанию рассматривай SQL и существующий planning-only EXPLAIN. Новое выполнение запроса даже с EXPLAIN требует проверенной изолированной среды. `EXPLAIN ANALYZE` действительно исполняет statement. Разрешай его только в disposable стенде с синтетическими/обезличенными данными после проверки statement и вызываемых функций. SELECT/EXECUTE могут иметь внешние эффекты; read-only transaction/ROLLBACK не являются полной песочницей. Неизвестные функции, CREATE TABLE AS, EXECUTE и materialized-view операции не запускать автоматически.
+By default, inspect SQL and existing planning-only EXPLAIN output. Executing a query, even with EXPLAIN, requires a verified isolated environment. `EXPLAIN ANALYZE` really executes the statement. Allow it only in a disposable environment with synthetic/anonymized data after checking the statement and called functions. SELECT/EXECUTE may have external effects. A read-only transaction/ROLLBACK is not a complete sandbox. Do not automatically run unknown functions, CREATE TABLE AS, EXECUTE, or materialized-view operations.
 
-Пример для **проверенного безопасного SELECT в disposable PostgreSQL**:
+Example for a **verified safe SELECT in disposable PostgreSQL**:
 
 ```sql
 EXPLAIN (FORMAT JSON, SETTINGS) SELECT ...;
 EXPLAIN (ANALYZE, BUFFERS, TIMING OFF, SETTINGS, FORMAT JSON) SELECT ...;
 ```
 
-Прочитай поддержку options в версии проекта. EXPLAIN cost не время. Plan instrumentation имеет overhead, а TIMING OFF не делает его обычным application request. Для основного результата отдельно меряй нормальный клиентский путь, fetch/serialization/round trips и concurrency. Планы сравнивай с одинаковыми options/параметрами/cache state.
+Check which options the project's version supports. EXPLAIN cost is not time. Plan instrumentation has overhead, and TIMING OFF does not make it an ordinary application request. For the primary result, separately measure the normal client path, fetch/serialization/round trips, and concurrency. Compare plans with identical options/parameters/cache state.
 
-## Контекст плана
+## Plan context
 
-Зафиксируй данные/распределение параметров, statistics freshness/ANALYZE policy, snapshot статистики, planner settings, версию и generic/custom prepared plan. Регенерация статистики только у candidate портит сравнение. Изменение плана без контролируемого состояния не приписывай переписыванию SQL. Тестируй частые и редкие параметры, а не один удачный tenant.
+Record data/parameter distribution, statistics freshness/ANALYZE policy, statistics snapshot, planner settings, version, and generic/custom prepared plan. Regenerating statistics only for the candidate invalidates the comparison. Do not attribute a plan change to a SQL rewrite without controlled state. Test common and rare parameters, not just one favorable tenant.
 
-## Направления оптимизации
+## Optimization directions
 
-| Сигнал | Кандидат | Обязательная проверка |
+| Signal | Candidate | Required check |
 |---|---|---|
-| N+1 и много round trips | Join/batch/предзагрузка нужного | Дубли, NULL, права, cardinality, peak memory |
-| Сканирование большой таблицы | Подходящий composite/partial/expression/covering index | Plan, селективность, размер индекса, write/WAL cost |
-| SELECT * / огромный JSON | Нужные столбцы, перенос фильтра ближе к данным | API schema, TOAST/IO, serializer cost |
-| Большой OFFSET | Keyset на устойчивом уникальном порядке | Сортировка/NULL, concurrent changes, прежний pagination contract |
-| Spill/temp IO | Уменьшить строки/сортировку/агрегацию, правильный индекс | work_mem на узел × workers × sessions |
-| Bloated storage | Диагностика таблиц/индексов/TOAST и жизненного цикла | Locks, vacuum/rewrite, replica/backup/migration safety |
+| N+1 and many round trips | Join/batch/preload what is needed | Duplicates, NULL, permissions, cardinality, peak memory |
+| Large table scan | Suitable composite/partial/expression/covering index | Plan, selectivity, index size, write/WAL cost |
+| SELECT * / huge JSON | Needed columns, move filtering closer to the data | API schema, TOAST/IO, serializer cost |
+| Large OFFSET | Keyset with a stable unique order | Ordering/NULL, concurrent changes, existing pagination contract |
+| Spill/temp I/O | Reduce rows/sorting/aggregation, use the right index | work_mem per node × workers × sessions |
+| Bloated storage | Diagnose tables/indexes/TOAST and lifecycle | Locks, vacuum/rewrite, replica/backup/migration safety |
 
-Индекс не бесплатен: измерь размер таблицы+индексов, время/объём insert/update/delete, WAL и место временной миграции при PostgreSQL. Только чтение быстрее не означает системный выигрыш. Добавление/удаление индекса оформляется миграцией для review; на рабочей БД автоматически не выполняется. Даже CONCURRENTLY имеет ограничения и влияние, это не разрешение на production DDL.
+An index is not free. Measure table+index size, insert/update/delete time/volume, WAL, and temporary migration space in PostgreSQL. Faster reads alone do not mean a system-wide gain. Add/remove indexes through a migration for review. Do not run it automatically on a working database. Even CONCURRENTLY has limitations and impact, and does not authorize production DDL.
 
-Для PG сравни `pg_table_size`, `pg_indexes_size`, `pg_total_relation_size` по точной версии. Размер логического JSON или `pg_column_size` одной строки не заменяет полный footprint. SQLite page_count×page_size измеряет страницы SQLite-файла, не PostgreSQL и не размер WAL/backup.
+For PG, compare `pg_table_size`, `pg_indexes_size`, and `pg_total_relation_size` for the exact version. The size of logical JSON or `pg_column_size` for one row does not replace the full footprint. SQLite page_count×page_size measures SQLite file pages, not PostgreSQL or WAL/backup size.
 
-Не сокращай TEXT до малых числовых/битовых типов без доказанных диапазонов, NULL-модели, старых читателей, миграции и обратимости. Битовая маска может сделать predicates/indexing хуже. Сохранение места в приложении не доказывает экономию SQL-таблицы из-за overhead и компрессии.
+Do not narrow TEXT to small numeric/bit types without proven ranges, a NULL model, compatibility with old readers, a migration, and reversibility. A bitmask may worsen predicates/indexing. Saving space in the application does not prove that the SQL table uses less space because of overhead and compression.
 
-Никогда не выключай RLS, constraints, fsync, synchronous_commit, validation или isolation ради скорости. Не меняй LIMIT/order/distinct/join semantics так, чтобы «ускорение» получалось пропуском работы.
+Never disable RLS, constraints, fsync, synchronous_commit, validation, or isolation for speed. Do not change LIMIT/order/distinct/join semantics so that a “speedup” comes from skipping work.
 
-Источники: [SUPABASE], [PG-EXPLAIN], [PG-SIZES], [PG-INDEX], [PG-TOAST], [PG-MEM], [PG-BITS].
+Sources: [SUPABASE], [PG-EXPLAIN], [PG-SIZES], [PG-INDEX], [PG-TOAST], [PG-MEM], [PG-BITS].

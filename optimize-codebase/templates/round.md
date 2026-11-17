@@ -1,17 +1,17 @@
-# Раунд оптимизации
+# Optimization round
 
 ID / session / scope / before revision / after revision:
-Гипотеза и ссылка на конкретный профиль/trace/benchmark:
-Применимо при / неприменимо при:
-Главная метрика + заранее заданный практический порог:
+Hypothesis and link to a specific profile/trace/benchmark:
+Applicable when / not applicable when:
+Primary metric + predefined practical threshold:
 RAM guardrail / storage guardrail / latency guardrail:
-Не затронутые измерения с объяснением / непроверенные риски:
+Unaffected measurements with explanation / unchecked risks:
 Toolchain + implementation / profile + flags + features / hardware / workload / dataset:
-Контракт эквивалентности и тесты:
-Команды и границы замера / AB-BA order / все результаты:
-Новая подтверждающая серия после выбора кандидата:
+Equivalence contract and tests:
+Commands and measurement boundaries / AB-BA order / all results:
+New confirmation series after choosing the candidate:
 Setup/encode/decode/write/invalidation costs:
 Verdict kept / reverted / inconclusive / blocked:
-Rollback только своего изменения:
-Источник ревью + фактическая область проверки:
-Evidence paths+hashes / итоговая запись памяти:
+Rollback of own change only:
+Review source + actual review scope:
+Evidence paths+hashes / final memory record:

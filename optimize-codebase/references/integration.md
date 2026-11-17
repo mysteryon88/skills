@@ -1,69 +1,69 @@
-# Интеграция с рабочим пайплайном
+# Integration with the workflow
 
-Сначала выполняются инструкции проекта и текущая задача. Этот пакет не создаёт
-AGENTS.md, hooks, конфигурацию агентов, MCP или установки других skills.
+Follow the project instructions and current task first. This package does not create
+AGENTS.md, hooks, agent configuration, MCP configuration, or other skill installations.
 
-## Выбор задачи
+## Choosing the task
 
-- Расследование, объяснение профиля и аудит: AUDIT без правок и записи опыта.
-- Просьба оптимизировать код: IMPLEMENT в разрешённом scope, измерения до/после.
-- Продолжение: RESUME после проверки revision, данных, контекста и чужих правок.
-- Структура, имена, декомпозиция без performance-контракта: refactor-codebase,
-  если доступен, либо штатный процесс рефакторинга проекта.
+- Investigation, profile explanation, and audit: AUDIT without edits or recording experience.
+- Request to optimize code: IMPLEMENT within the authorized scope, with before/after measurements.
+- Continuing work: RESUME after checking the revision, data, context, and others' changes.
+- Structure, naming, or decomposition without a performance contract: use refactor-codebase,
+  if available, or the project's usual refactoring process.
 
-Для смешанной задачи не объявляй структурный рефакторинг ускорением. Сохраняй
-отдельную гипотезу и сопоставимый baseline каждой performance-правки.
-Общие разрешения текущей задачи сохраняются; skill не добавляет новых внешних действий.
+For a mixed task, do not present structural refactoring as a speedup. Keep
+a separate hypothesis and comparable baseline for each performance change.
+The current task's general authorizations still apply. The skill adds no new external actions.
 
-## Orchestrator и ревью
+## Orchestrator and review
 
-Если проект требует codex-worker-orchestrator или другой контроллер, он владеет
-планированием, выбором ролей, изоляцией, dispatch и итоговой приёмкой. Не создавай
-вложенного контроллера и не дублируй model policy здесь. Делегируй полезные
-независимые исследования, соблюдая доступные роли и проектные gates.
+If the project requires codex-worker-orchestrator or another controller, it owns
+planning, role selection, isolation, dispatch, and final acceptance. Do not create
+a nested controller or duplicate model policy here. Delegate useful
+independent research while following available roles and project gates.
 
-Проверки корректности могут быть независимыми, но сравниваемые benchmarks на одном
-хосте выполняются последовательно без конкурирующих сборок/измерителей. Reviewer
-получает raw evidence, не только итог perfkit. Если независимый reviewer обязателен
-и недоступен, приёмка блокируется; необязательное self-review обозначается явно.
+Correctness checks may run independently, but comparable benchmarks on one
+host run sequentially, without competing builds or measurement processes. The reviewer
+receives raw evidence, not only the final perfkit output. If an independent reviewer is required
+but unavailable, acceptance is blocked. Label optional self-review explicitly.
 
-## Recall и опыт
+## Recall and experience
 
-При обязательном project recall следуй reflect-and-improve: один scoped lookup
-на родительскую задачу, проверка текущей применимости, передача выбранного контекста
-детям. Не начинай reflect/improve, активацию или запись глобальной памяти автоматически.
-Если skill недоступен, используй существующие разрешённые отчёты без его установки.
+When project recall is required, follow reflect-and-improve: one scoped lookup
+for the parent task, check current applicability, and pass selected context
+to children. Do not automatically start reflect/improve, activation, or global memory writes.
+If the skill is unavailable, use existing authorized reports without installing it.
 
-SQLite кейсбук — отдельные локальные данные экспериментов, не новая инструкция.
-Данные read-only recall помогают выбрать гипотезы, но не снимают fresh baseline,
-guardrails и независимую подтверждающую серию. Не копируй туда приватные чаты.
+The SQLite casebook is separate local experiment data, not a new instruction.
+Read-only recall data can help choose hypotheses, but does not replace a fresh baseline,
+guardrails, or an independent confirmation series. Do not copy private chats into it.
 
-## Рабочие файлы и процессы
+## Working files and processes
 
-По умолчанию используй `<project>/.tmp/optimize-codebase/` для plan.md,
-experience.sqlite3, evidence, профилей, тестовых файлов, downloads и build outputs.
-До записи раскрой физические пути и проверь отсутствие symlink/junction/reparse
-выхода из проекта. Не используй перенаправления как обход этой границы.
+By default, use `<project>/.tmp/optimize-codebase/` for plan.md,
+experience.sqlite3, evidence, profiles, test files, downloads, and build outputs.
+Before writing, resolve physical paths and check that no symlink/junction/reparse
+escapes the project. Do not use redirection to bypass this boundary.
 
-Перед инструментами настрой process-scoped TEMP, TMP, TMPDIR и выбираемые ими
-cache/output пути в этот каталог. Не меняй машинные defaults. Примеры Bash требуют
-эквивалентной настройки переменных в PowerShell/другой среде. Доступные инструменты
-определяются по проекту; отсутствие компилятора не разрешает его скачивание.
+Before using tools, set process-scoped TEMP, TMP, TMPDIR, and the cache/output paths they select
+inside this directory. Do not change machine defaults. Bash examples require
+equivalent variable configuration in PowerShell/other environments. Available tools
+are determined by the project. A missing compiler does not authorize downloading one.
 
-Выбирай Python runtime по инструкциям проекта. Если на Windows задан WSL по
-умолчанию, укажи дистрибуцию и Linux cwd явно, переведи Windows/helper пути через
-`wslpath` этой дистрибуции и запускай `python3`, а не Windows/UNC путь из Linux.
-Перед первым вызовом проверь `sys.executable`, `sys.platform` и `os.getcwd()`.
-Windows Python используй только для требующих Windows API проверок или по явному
-запросу. Всегда указывай interpreter; `.py` через файловые ассоциации, молчаливый
-fallback и установка runtime не заменяют отсутствующую среду.
+Choose the Python runtime according to the project instructions. If WSL is the
+default on Windows, explicitly specify the distribution and Linux cwd, convert Windows/helper paths with
+that distribution's `wslpath`, and run `python3` instead of passing a Windows/UNC path to Linux.
+Before the first invocation, check `sys.executable`, `sys.platform`, and `os.getcwd()`.
+Use Windows Python only for checks requiring the Windows API or by explicit
+request. Always specify the interpreter. `.py` file associations, a silent
+fallback, and installing a runtime do not replace an unavailable environment.
 
-Фиксируй PID/идентичность запущенных длительных тестов и останавливай их деревья
-после завершения/ошибки. Не завершай чужие процессы или запрошенные работающие сервисы.
-Новые worktrees создавай только внутри `<repo>/.worktree/` при соответствующем
-проектном требовании. Не удаляй прежние файлы/опыт/worktrees автоматически.
+Record the PID/identity of long-running tests and stop their process trees
+after completion/failure. Do not stop other people's processes or requested running services.
+Create new worktrees only inside `<repo>/.worktree/` when required by the project.
+Do not automatically delete existing files, experience, or worktrees.
 
-SQLite в .tmp переживает сессии только пока этот каталог сохранён. Для постоянного
-хранения используй явно указанный пользователем путь; не обещай долговечность .tmp.
-Публикация пакета, глобальная установка и проверка обнаружения в новом клиенте —
-разные действия; текущая оптимизация их автоматически не запускает.
+SQLite data in .tmp survives sessions only while this directory is retained. For persistent
+storage, use a path explicitly provided by the user. Do not promise .tmp is durable.
+Package publication, global installation, and discovery checks in a new client are
+separate actions. The current optimization does not run them automatically.
