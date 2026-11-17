@@ -1,0 +1,6 @@
+interface:
+  display_name: "Mutation campaign"
+  short_description: "Run and verify isolated smart-contract mutation campaigns"
+  default_prompt: "Use $mutation-campaign to run a calibrated local campaign and account for every survivor."
+policy:
+  allow_implicit_invocation: true
