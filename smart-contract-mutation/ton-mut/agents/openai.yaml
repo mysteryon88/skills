@@ -1,0 +1,4 @@
+interface:
+  display_name: "TON mutation"
+  short_description: "Run calibrated Tact, Tolk and FunC mutation lanes"
+  default_prompt: "Use $ton-mut to execute the selected TON mutation lane with real compiled-contract evidence."
