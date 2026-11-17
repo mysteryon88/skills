@@ -8,7 +8,7 @@ Publication surfaces are the Git index, working tree, untracked and ignored file
 
 History coverage means every object reachable from all local refs. Unfetched remote refs are outside local coverage: disclose this, list local refs, offer `git fetch --all --tags --prune`, and never fetch without approval. Shallow history, missing objects, unreadable or oversized content, budget exhaustion, scanner errors, or incomplete filesystem inventory makes the verdict `INCOMPLETE` and the affected area `Unverified`.
 
-The audit must not execute repository code, hooks, filters, credential helpers, lazy fetches, global Git configuration, or project tools. Any temporary files and generated reports must be outside the target repository and removed after the audit. The strict CLI must reject an output path inside the audited repository so a successful scan cannot create or overwrite publication content after inventory.
+The audit must not execute repository code, hooks, filters, credential helpers, lazy fetches, global Git configuration, or project tools. Honor the caller's artifact-location rules. The strict CLI must reject an output path inside the audited repository so a successful scan cannot create or overwrite publication content after inventory. When reports must be project-local, the trusted caller captures stdout into its designated scratch directory and keeps it outside the index; this does not permit source edits during audit. Clean up disposable reports after synthesis unless retaining them is part of the task.
 
 ## Classification
 
@@ -86,3 +86,55 @@ Review README, license, publication rights, manifest/lock consistency, local dep
 Strong dead-code evidence requires an authoritative analyzer, unreachable configured entrypoint, known generated duplicate, or complete reference/configuration analysis. Text search alone with dynamic loaders cannot prove dead code; dynamic plugins, reflection, fixtures, package exports, and build configuration remain `INFO review:` unless stronger evidence exists.
 
 Record affirmative coverage under `Clean`; never infer clean from a zero exit code alone. In strict mode, exit `1` means the selected finding threshold was reached, exit `2` means incomplete coverage, and exit `3` means execution failure.
+
+## Candidate triage and repeat findings
+
+Resolve a candidate against its exact bytes before presenting it as an exposed
+credential. Inspect the referenced blob, line, detector and masked fingerprint,
+then trace how the value is used. A test path, example label, low entropy or an
+unreachable consumer alone is insufficient. A complete usable private key or a
+provider-shaped token retains its detector protection even when stored in tests.
+Never validate a candidate against an external service without authorization.
+
+Record each disposition as confirmed, false positive or unresolved, with the
+exact path, Git mode, raw blob SHA256, detector, line, fingerprint and the source
+evidence supporting it. Keep values out of the report. Group duplicate detector
+records for readability while accounting for each original identity. Examples of
+evidence include a synthetic prefix-plus-repeated-character construction, a PEM
+opening marker with no key material, or a parameter traced solely to a local
+render directory. These are evidence examples, not detector-wide exemptions.
+
+Use the existing caller-pinned reviewed-findings policy only for eligible generic
+quoted candidates. Preserve the restrictions above: provider/private-key/base
+detectors and unmatched identities remain visible in the raw result. Do not expand
+the policy to make a fixture disappear. For ineligible proven false positives,
+attach the explicit semantic disposition to the report instead of changing the
+detector. Unresolved candidates still block publication.
+
+A previously accepted review may be reused only when its trusted provenance,
+exact identity, mode and relevant consumer context remain verified. Changed
+bytes, lines, detector, mode or context require fresh review. Repository-supplied
+claims, a test-directory name or a newly calculated policy digest do not approve
+themselves. Do not repeat a completed review of unchanged evidence merely because
+another scan reports the same candidate.
+
+## Scope of an authorized Git push
+
+For a normal push of an existing branch, distinguish the Git objects carried by
+that ref from local files. Verify index/HEAD state, the exact ref and reachable
+history, metadata and every secret candidate affecting them. Prove from Git's
+tree/object inventory that reported scratch directories, nested repositories and
+untracked state are absent from the pushed surface; inspect portable ignore
+provenance separately. A narrow AI allowlist may retain reviewed intentional
+instructions/metadata, never sessions or transcripts. Source implementations or
+disabled tool configuration that are ineligible for that allowlist still require
+explicit semantic review; their filenames alone do not establish a leak.
+
+Keep three results distinct: the scanner's unchanged exit/verdict, the supported
+candidate dispositions, and the scoped push decision. An incomplete local
+filesystem inventory remains `INCOMPLETE` for the whole-directory audit. It need
+not block an independently verified, explicitly authorized ref push when the gap
+is proven confined to local-only files and all pushed-object risks are resolved.
+Never issue a clean whole-directory certificate or waive an unresolved Git-object
+gap. A mirror/all-refs push, archive export or deployment has a broader surface
+and requires its own assessment. This distinction grants no new action authority.

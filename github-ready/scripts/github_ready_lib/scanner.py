@@ -90,8 +90,9 @@ _MANIFEST_NAMES = {
     "yarn.lock",
 }
 _LOCAL_DEPENDENCY_REFERENCE = re.compile(
-    rb"(?i)(?:file:(?://)?(?:/[A-Za-z0-9._~!@%+,:=\\/-]+|[A-Z]:[\\/][A-Za-z0-9._~!@%+,:=\\/-]+)"
-    rb"|(?:[A-Z]:[\\/]|/(?:home|users|private|tmp|var|opt)/)[A-Za-z0-9._~!@%+,:=\\/-]+)"
+    rb"(?i)https?://[^\s\"'<>]+|(?P<local>"
+    rb"file:(?://)?(?:/[A-Za-z0-9._~!@%+,:=\\/-]+|[A-Z]:[\\/][A-Za-z0-9._~!@%+,:=\\/-]+)"
+    rb"|(?<![A-Za-z0-9_/])(?:[A-Z]:[\\/]|/(?:home|users|private|tmp|var|opt)/)[A-Za-z0-9._~!@%+,:=\\/-]+)"
 )
 _ROOT_README_NAMES = {"readme", "readme.md", "readme.rst", "readme.txt"}
 _ROOT_LICENSE_NAMES = {
@@ -270,6 +271,9 @@ def _scan_local_dependency_candidates(
     for match in _LOCAL_DEPENDENCY_REFERENCE.finditer(data):
         if budget is not None:
             budget.consume_work()
+        # Consume remote URLs before examining drive/path substrings in them.
+        if match.group("local") is None:
+            continue
         line = data.count(b"\n", 0, match.start()) + 1
         if line in seen_lines:
             continue

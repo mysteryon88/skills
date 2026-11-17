@@ -53,4 +53,4 @@ For a verified generic false positive, use only the exact staged policy format i
 
 When any red flag appears, return to the read-only report and request the missing selection or approval.
 
-After approved work, rerun the full strict gate from a clean external temporary directory. Report closed IDs with evidence, remaining IDs, newly introduced IDs, `Unverified`, and the new verdict. A successful command, absent working-tree path, or zero exit code alone is not proof of closure.
+After approved work, rerun the full strict gate from the trusted installed skill, honoring caller artifact-location rules and the CLI output-path restriction in audit-policy.md. Report closed IDs with evidence, remaining IDs, newly introduced IDs, `Unverified`, and the new verdict. A successful command, absent working-tree path, or zero exit code alone is not proof of closure.
