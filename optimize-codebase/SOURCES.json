@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "maintained_import": {
+    "archive_sha256": "a72ab482f87f298578c246a1097721cb80157bda46abdfc5247a1b230bca6a98",
+    "note": "Source entries retain the supplied archive's research claims, access dates and identifiers. They are not an assertion that the maintainer reread every source. Historical reports and benchmark numbers are excluded from the runtime release."
+  },
+  "verified_primary_docs": [
+    "https://learn.microsoft.com/en-us/windows/wsl/file-permissions",
+    "https://pkg.go.dev/cmd/go",
+    "https://go.dev/src/cmd/go/internal/test/test.go",
+    "https://doc.rust-lang.org/cargo/reference/profiles.html#panic",
+    "https://react.dev/reference/react/Profiler#caveats",
+    "https://go.dev/doc/gc-guide",
+    "https://www.postgresql.org/docs/16/sql-explain.html",
+    "https://www.postgresql.org/docs/16/functions-admin.html"
+  ],
+  "sources": [
+    {
+      "id": "GO-SKILL",
+      "title": "samber: golang-performance",
+      "url": "https://github.com/samber/cc-skills-golang/blob/d68d80aec298e1b74b37c2a472c002b5217248b3/skills/golang-performance/SKILL.md",
+      "git_blob_sha": "0a0c128d4b5d5b5b4e74f38424699bc333ad042d",
+      "review_scope": "Full SKILL.md via GitHub connector; referenced files not exhaustively audited",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "RUST-SKILL",
+      "title": "dawidpereira: rust-perf",
+      "url": "https://github.com/dawidpereira/rust-skills/blob/main/skills/rust-perf/SKILL.md",
+      "git_blob_sha": "5186c785c43f0e675e3d0948809ea83459c75262",
+      "review_scope": "Full SKILL.md via GitHub connector",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "CODSPEED",
+      "title": "CodSpeed autonomous optimization",
+      "url": "https://github.com/CodSpeedHQ/codspeed/blob/main/skills/codspeed-optimize/SKILL.md",
+      "git_blob_sha": "b8f50e9af9656a3a494d16ed53b07d1464cf5637",
+      "review_scope": "SKILL.md via GitHub connector",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "FORY",
+      "title": "Apache Fory performance optimization",
+      "url": "https://github.com/apache/fory/blob/main/.agents/skills/fory-performance-optimization/SKILL.md",
+      "git_blob_sha": "f2f72d52819bfc0838f6d60a2103c90f8f0d4907",
+      "review_scope": "SKILL.md via GitHub connector",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "NVIDIA-CASES",
+      "title": "NVIDIA TensorRT-LLM performance casebook",
+      "url": "https://github.com/NVIDIA/TensorRT-LLM/blob/main/.claude/skills/perf-optimization-casebook/SKILL.md",
+      "git_blob_sha": "2bb8697be87b9625396e7b6695fa3465ad874940",
+      "review_scope": "First 200 lines read via connector; casebook methodology only, not GPU recommendations",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "VERCEL",
+      "title": "Vercel React Best Practices",
+      "url": "https://github.com/vercel-labs/agent-skills/blob/main/skills/react-best-practices/SKILL.md",
+      "git_blob_sha": null,
+      "review_scope": "Installed skill core and public source; no claim every individual rule was audited",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "SUPABASE",
+      "title": "Supabase Postgres Best Practices",
+      "url": "https://github.com/supabase/agent-skills/blob/main/skills/supabase-postgres-best-practices/SKILL.md",
+      "git_blob_sha": null,
+      "review_scope": "Installed skill core and public source; no exhaustive rule audit",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "GO-DIAG",
+      "title": "Go Diagnostics",
+      "url": "https://go.dev/doc/diagnostics",
+      "git_blob_sha": null,
+      "review_scope": "Official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "GO-GC",
+      "title": "Go GC guide",
+      "url": "https://go.dev/doc/gc-guide",
+      "git_blob_sha": null,
+      "review_scope": "Official guide; standard gc implementation, version-sensitive",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "GO-PPROF",
+      "title": "runtime/pprof",
+      "url": "https://pkg.go.dev/runtime/pprof",
+      "git_blob_sha": null,
+      "review_scope": "Official library documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "BENCHSTAT",
+      "title": "Go benchstat",
+      "url": "https://pkg.go.dev/golang.org/x/perf/cmd/benchstat",
+      "git_blob_sha": null,
+      "review_scope": "Official tool documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "RUST-PROFILES",
+      "title": "Cargo profiles",
+      "url": "https://doc.rust-lang.org/cargo/reference/profiles.html",
+      "git_blob_sha": null,
+      "review_scope": "Official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "RUST-BLACKBOX",
+      "title": "std::hint::black_box",
+      "url": "https://doc.rust-lang.org/std/hint/fn.black_box.html",
+      "git_blob_sha": null,
+      "review_scope": "Official library documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "RUST-ALLOC",
+      "title": "Rust Performance Book: Heap Allocations",
+      "url": "https://nnethercote.github.io/perf-book/heap-allocations.html",
+      "git_blob_sha": null,
+      "review_scope": "Primary author performance guide",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "RUST-SIZE",
+      "title": "Rust Performance Book: Type Sizes",
+      "url": "https://nnethercote.github.io/perf-book/type-sizes.html",
+      "git_blob_sha": null,
+      "review_scope": "Primary author guide; target-specific details not universalized",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-EXPLAIN",
+      "title": "PostgreSQL 16 EXPLAIN",
+      "url": "https://www.postgresql.org/docs/16/sql-explain.html",
+      "git_blob_sha": null,
+      "review_scope": "Versioned official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-SIZES",
+      "title": "PostgreSQL 16 size functions",
+      "url": "https://www.postgresql.org/docs/16/functions-admin.html",
+      "git_blob_sha": null,
+      "review_scope": "Versioned official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-INDEX",
+      "title": "PostgreSQL 16 multicolumn indexes",
+      "url": "https://www.postgresql.org/docs/16/indexes-multicolumn.html",
+      "git_blob_sha": null,
+      "review_scope": "Versioned official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-TOAST",
+      "title": "PostgreSQL 16 TOAST",
+      "url": "https://www.postgresql.org/docs/16/storage-toast.html",
+      "git_blob_sha": null,
+      "review_scope": "Versioned official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-MEM",
+      "title": "PostgreSQL 16 resource consumption",
+      "url": "https://www.postgresql.org/docs/16/runtime-config-resource.html",
+      "git_blob_sha": null,
+      "review_scope": "Versioned official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PG-BITS",
+      "title": "PostgreSQL bit strings",
+      "url": "https://www.postgresql.org/docs/current/datatype-bit.html",
+      "git_blob_sha": null,
+      "review_scope": "Official documentation; runtime version must be checked",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "REACT-PROFILER",
+      "title": "React Profiler",
+      "url": "https://react.dev/reference/react/Profiler",
+      "git_blob_sha": null,
+      "review_scope": "Official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "REACT-MEMO",
+      "title": "React useMemo",
+      "url": "https://react.dev/reference/react/useMemo",
+      "git_blob_sha": null,
+      "review_scope": "Official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "ECMA-BITS",
+      "title": "ECMAScript binary bitwise operators",
+      "url": "https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#sec-binary-bitwise-operators",
+      "git_blob_sha": null,
+      "review_scope": "Language specification; living edition, relevant Number/BigInt semantics",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "ROARING",
+      "title": "Roaring bitmap overview",
+      "url": "https://roaringbitmap.org/about/",
+      "git_blob_sha": null,
+      "review_scope": "Project primary source",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "ARROW",
+      "title": "Apache Arrow columnar format",
+      "url": "https://arrow.apache.org/docs/format/Columnar.html",
+      "git_blob_sha": null,
+      "review_scope": "Project specification",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "PROTOBUF",
+      "title": "Protocol Buffers encoding",
+      "url": "https://protobuf.dev/programming-guides/encoding/",
+      "git_blob_sha": null,
+      "review_scope": "Project official documentation",
+      "accessed_on": "2026-11-17"
+    },
+    {
+      "id": "SKILLS-INSTALL",
+      "title": "OpenAI Agent Skills",
+      "url": "https://developers.openai.com/codex/skills/",
+      "git_blob_sha": null,
+      "review_scope": "Official installation guidance; verify host conventions",
+      "accessed_on": "2026-11-17"
+    }
+  ],
+  "note": "Blob IDs identify the fetched file when available; mutable branch URLs may later change. No source speed numbers are treated as benchmark results for this package."
+}

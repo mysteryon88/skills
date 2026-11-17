@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optimize Codebase"
+  short_description: "Measure and verify code performance improvements"
+  default_prompt: "Use $optimize-codebase to investigate or improve performance within the requested scope, preserving behavior and measuring resource tradeoffs."

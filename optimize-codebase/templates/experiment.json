@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "replace-with-experiment-id",
+  "session": "replace-with-session-id",
+  "pattern": "replace-with-pattern",
+  "context": {
+    "project": "replace-project",
+    "stack": "replace-stack",
+    "toolchain": "replace-toolchain",
+    "build": "replace-build",
+    "hardware": "replace-hardware",
+    "workload": "replace-workload",
+    "dataset": "replace-dataset",
+    "contract": "replace-contract"
+  },
+  "before_revision": "replace-with-before-hash",
+  "after_revision": "replace-with-after-hash",
+  "protocol": "paired-alternating",
+  "checks": [
+    {
+      "name": "replace-with-actual-command",
+      "status": "not_run"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "duration",
+      "dimension": "time",
+      "unit": "ns/op",
+      "direction": "lower",
+      "role": "primary",
+      "before": [],
+      "after": [],
+      "min_gain_pct": 5.0,
+      "max_regression_pct": 0.0,
+      "kind": "sampled"
+    },
+    {
+      "name": "payload",
+      "dimension": "memory",
+      "unit": "bytes",
+      "direction": "lower",
+      "role": "guardrail",
+      "before": [],
+      "after": [],
+      "min_gain_pct": 0.0,
+      "max_regression_pct": 0.0,
+      "kind": "exact"
+    }
+  ],
+  "evidence": [],
+  "summary": "Template only; replace with sanitized actual conditions and decision."
+}

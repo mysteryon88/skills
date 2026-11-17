@@ -1,0 +1,10 @@
+{
+  "project": "replace-project",
+  "stack": "replace-stack",
+  "toolchain": "replace-toolchain",
+  "build": "replace-build",
+  "hardware": "replace-hardware",
+  "workload": "replace-workload",
+  "dataset": "replace-dataset",
+  "contract": "replace-contract"
+}
