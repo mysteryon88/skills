@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrating Parallel Worktree Changes V2"
+  short_description: "Execute validated parallel worktree waves"
+  default_prompt: "Use $orchestrating-parallel-worktree-changes-v2 to execute a concrete request or validated execution overlay in isolated waves, preserve per-Task review gates, integrate lanes serially, verify the combined result, and clean only owned resources."
