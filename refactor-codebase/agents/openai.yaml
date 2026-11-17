@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactor Codebase"
+  short_description: "Safely refactor existing code"
+  default_prompt: "Use $refactor-codebase for the explicitly requested scope and report refactoring quality."
