@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mutation survivor analyst"
+  short_description: "Explain survivors and replay specification-backed test improvements"
+  default_prompt: "Use $mutation-survivors to account for every survivor with evidence and confidence."
