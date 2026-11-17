@@ -575,7 +575,7 @@ def _accepted_artifact(
 
 def _planning_prerequisites(
     request: Mapping[str, Any], registry: Mapping[str, RoleSpec],
-    project_root: Path | None, *, simple: bool,
+    project_root: Path | None, *, simple: bool, file_change_route: bool,
 ) -> list[str]:
     if simple:
         return []
@@ -583,8 +583,7 @@ def _planning_prerequisites(
         (request["phase"] == "planning" and request["intent"] != "spec-review")
         or request["intent"] in {"plan-review", "plan-gap-analysis"}
     )
-    write_stage = request["mutation"] == "write"
-    if not plan_stage and not write_stage:
+    if not plan_stage and not file_change_route:
         return []
     planning = request.get("planning", {"kind": "substantive"})
     if planning["kind"] == "settled":
@@ -598,7 +597,7 @@ def _planning_prerequisites(
         if "specification" not in planning:
             raise ValueError("accepted specification evidence is required before plan inputs or implementation")
         spec = _accepted_artifact(project_root, planning["specification"], "specification", registry)
-        if write_stage:
+        if file_change_route:
             if "plan" not in planning:
                 raise ValueError("accepted plan evidence is required before implementation")
             plan = _accepted_artifact(project_root, planning["plan"], "plan", registry)
@@ -852,7 +851,7 @@ def resolve_request(
     ):
         blocked_reasons.append("High-rigor risk or integration-debugging file changes, including diagnostics, require Hard mode.")
     prerequisites = _planning_prerequisites(request, registry, Path(project_root) if project_root is not None else None,
-                                           simple=force_inline)
+                                           simple=force_inline, file_change_route=file_change_route)
     if request["user_forbids_subagents"]:
         warnings.extend(prerequisites)
         if prerequisites or file_change_route or intent in REVIEW_INTENTS | {"architecture"}:

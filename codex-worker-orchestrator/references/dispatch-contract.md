@@ -49,14 +49,14 @@ The ordered gate is:
 3. Draft the plan against the corrected specification or binding requirements; independently check fidelity, ordered steps, ownership, dependencies, failure paths, and meaningful acceptance checks before implementation.
 4. Root resolves material plan findings before dependent work. Critique neither grants user approval nor replaces final Hard code review.
 
-Materialize the existing brief/binding requirements and plan under an explicit trusted project root; a new permanent specification is unnecessary. Pass that root as `resolve_roles.py --project-root <root>` (API: `project_root=`); it is separate from the installed package root and is never inferred from CWD. For nontrivial writes, missing planning context defaults to substantive. Supply references such as:
+Keep the repository root distinct from the ledger/artifact root. Create and validate a task directory `<repository>/.tmp/<task>` physically inside the repository, rejecting symlinks/junctions; put briefs, plans, request/report JSON, logs, backups and test/build outputs there. A new permanent specification is unnecessary. Pass that task directory explicitly as `resolve_roles.py --project-root <repository>/.tmp/<task>` and `run_state.py --project-root <repository>/.tmp/<task>` (API: `project_root=`), so the ledger and its atomic staging remain inside project `.tmp`. Packet cwd/repository remains the actual repository. For nontrivial writes, missing planning context defaults to substantive. Artifact references are relative to the task root:
 
 ```json
 {
   "planning": {
     "kind": "substantive",
-    "specification": {"path": ".codex/orchestrator/spec.md", "author_id": "root", "review_run_id": "spec-review", "review_report_id": "spec-1"},
-    "plan": {"path": ".codex/orchestrator/plan.md", "author_id": "root", "review_run_id": "plan-review", "review_report_id": "plan-1"}
+    "specification": {"path": "spec.md", "author_id": "root", "review_run_id": "spec-review", "review_report_id": "spec-1"},
+    "plan": {"path": "plan.md", "author_id": "root", "review_run_id": "plan-review", "review_report_id": "plan-1"}
   }
 }
 ```
@@ -64,6 +64,8 @@ Materialize the existing brief/binding requirements and plan under an explicit t
 Record each actual independent report with existing `run_state.py record-report`, then the root ruling using `reconcile ... --decision ACCEPT`. Use a separate run per artifact stage when routes differ. The report's optional `artifact_review` is required for evidence reuse: `kind` (`specification` or `plan`), project-relative `path`, lowercase `sha256` of the exact bytes, `author_id`, and actual `reviewer_id`; a plan also supplies `specification_sha256`. The author and critic must be distinct even when root merely persists an architect's draft. Root checks actual tool dispatch identity; self-reported identity is insufficient. Equivalent accepted review from another workflow can be recorded through this same contract without creating another child.
 
 Resolver validates the referenced ledger and dispatched read-only `skeptic` or `sol_reviewer`, `DONE`, no unresolved `findings` or authoring changes, current root `ACCEPT`, metadata/current bytes, and the latest same-path/stage report within that run. Put optional improvements in `concerns`; resolve material findings before recording an accepting report. A later unaccepted/rejected/blocking report supersedes an older ACCEPT. Plan review must bind the current specification digest and be recorded after its acceptance. Missing/stale/self-review, absolute/traversal/stream paths, redirected path members, and nonregular files block dependent work and handoff. This is a local root-owned audit record, not signed identity attestation or discovery of superseding reviews in unrelated runs. Revalidate before dependent work if artifacts change.
+
+All declared file-changing routes enter this barrier, including `mutation=diagnostic` with nonempty `write_surfaces`; both accepted specification and plan are required. Diagnostics without declared changes retain ordinary verification routing. Planning acceptance never permits a diagnostic/test-only role to edit production or tracked/generated source; retain the role's output restrictions and return NEEDS_CONTEXT when required.
 
 An explicit `"planning": {"kind": "settled"}` recipe skips new critique only with `approved_design=true`, below high rigor, and without security or independent-analysis requirements. Do not relabel new substantive choices as settled. Simple safe Direct work and ordinary verification need no ledger. The same critic may be resumed sequentially for spec and plan. Accepted unchanged plan critique replaces a redundant pre-write skeptic; final Hard code review remains separate. Stop after at most three review/correction rounds per artifact and escalate unresolved material decisions before dependent work.
 
